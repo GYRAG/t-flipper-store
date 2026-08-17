@@ -1,0 +1,14 @@
+App(
+    appid="fortune_spinner",
+    name="Fortune Spinner",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="fortune_spinner_app",
+    requires=["gui"],
+    stack_size=2 * 1024,
+    order=90,
+    fap_icon="fortune_spinner.png",
+    fap_category="Games",
+    fap_description="Spin for YES, NO, or MAYBE",
+    fap_author="Ugur",
+    fap_weburl="https://github.com/xantopren/fortune-spinner",
+)

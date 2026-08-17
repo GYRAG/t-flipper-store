@@ -28,3 +28,10 @@ managed_components/
 releases/*.zip
 *-backup-*
 *.backup-*
+
+# graphify knowledge-graph output + local interpreter pointer (local only)
+graphify-out/
+.graphify_*
+
+# Local web-flasher staging (generated bins copied from build_t_embed/)
+release/

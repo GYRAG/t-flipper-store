@@ -117,25 +117,40 @@ static void number_input_backspace_cb(NumberInputModel* model) {
     model->current_number = strtol(furi_string_get_cstr(model->text_buffer), NULL, 10);
 }
 
+/* On this port the primary input is a single-axis rotary encoder: a plain turn
+ * emits Up/Down, and Left/Right only via encoder-held-and-turned. So make Up/Down
+ * walk the whole keypad linearly in reading order (0,1,2,3,4,BS,5,6,7,8,9,+/-,OK)
+ * with wrap, so the dial alone reaches every key. Left/Right still jump
+ * horizontally within a row for anyone using the modifier. */
 static void number_input_handle_up(NumberInputModel* model) {
-    if(model->selected_row > 0) {
+    if(model->selected_column > 0) {
+        model->selected_column--;
+    } else if(model->selected_row > 0) {
         model->selected_row--;
-        if(model->selected_column > number_input_get_row_size(model->selected_row) - 1) {
-            model->selected_column = number_input_get_row_size(model->selected_row) - 1;
-        }
+        model->selected_column = number_input_get_row_size(model->selected_row) - 1;
+    } else {
+        model->selected_row = keyboard_row_count - 1;
+        model->selected_column = number_input_get_row_size(model->selected_row) - 1;
+    }
+    const NumberInputKey* keys = number_input_get_row(model->selected_row);
+    if(keys[model->selected_column].text == sign_symbol && !number_input_use_sign(model)) {
+        number_input_handle_up(model); // step past the hidden sign key (single key, one hop)
     }
 }
 
 static void number_input_handle_down(NumberInputModel* model) {
-    if(model->selected_row < keyboard_row_count - 1) {
-        if(model->selected_column >= number_input_get_row_size(model->selected_row) - 1) {
-            model->selected_column = number_input_get_row_size(model->selected_row + 1) - 1;
-        }
-        model->selected_row += 1;
+    if(model->selected_column < number_input_get_row_size(model->selected_row) - 1) {
+        model->selected_column++;
+    } else if(model->selected_row < keyboard_row_count - 1) {
+        model->selected_row++;
+        model->selected_column = 0;
+    } else {
+        model->selected_row = 0;
+        model->selected_column = 0;
     }
     const NumberInputKey* keys = number_input_get_row(model->selected_row);
     if(keys[model->selected_column].text == sign_symbol && !number_input_use_sign(model)) {
-        model->selected_column--;
+        number_input_handle_down(model); // step past the hidden sign key (single key, one hop)
     }
 }
 

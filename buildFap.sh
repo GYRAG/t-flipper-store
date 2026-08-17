@@ -12,6 +12,12 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR" && pwd)"
 
+# Python interpreter for the build helper scripts. Defaults to python3 (Linux/mac),
+# but on Windows `python3` is a Microsoft Store stub that silently does nothing —
+# set PYTHON to a real interpreter (that has Pillow, for icon compilation), e.g.
+#   PYTHON="C:/Espressif/python_env/idf5.4_py3.11_env/Scripts/python.exe"
+PYTHON="${PYTHON:-python3}"
+
 APP_DIR="$1"
 
 if [ -z "$APP_DIR" ] || [ ! -d "$APP_DIR" ]; then
@@ -46,7 +52,7 @@ if [ -f "$APP_DIR/application.fam" ]; then
     [ -n "$IC" ] && APP_ICON="$APP_DIR/$IC"
     SK=$(grep 'stack_size=' "$APP_DIR/application.fam" | sed 's/.*stack_size=\([0-9*  ]*\).*/\1/' | head -1)
     if [ -n "$SK" ]; then
-        APP_STACK=$(python3 -c "print(max(int($SK), 16384))" 2>/dev/null || echo 16384)
+        APP_STACK=$("$PYTHON" -c "print(max(int($SK), 16384))" 2>/dev/null || echo 16384)
     fi
 fi
 
@@ -359,7 +365,7 @@ build_for_target() {
         # avoid duplicate definitions at link; the extra headers stay declaration-only.
         local _icon_first=1
         for stem in $ICON_STEMS; do
-            python3 "$SCRIPT_DIR/tools/fam/compile_icons.py" icons \
+            "$PYTHON" "$SCRIPT_DIR/tools/fam/compile_icons.py" icons \
                 --filename "$stem" \
                 "$ICON_ASSETS_DIR" "$ICONS_GEN_DIR" 2>/dev/null || true
             if [ "$_icon_first" = "1" ] && [ -f "$ICONS_GEN_DIR/${stem}.h" ]; then
@@ -379,7 +385,7 @@ build_for_target() {
     local -a LIB_SOURCES=()
     if [ -f "$APP_DIR/application.fam" ]; then
         local LIB_INFO
-        LIB_INFO=$(python3 "$SCRIPT_DIR/tools/fap_lib_info.py" "$APP_DIR" 2>/dev/null || true)
+        LIB_INFO=$("$PYTHON" "$SCRIPT_DIR/tools/fap_lib_info.py" "$APP_DIR" 2>/dev/null || true)
         while IFS=$'\t' read -r kind val; do
             case "$kind" in
                 LIBDIR)   LIB_EXCLUDE_DIRS+=("$APP_DIR/lib/$val") ;;
@@ -403,7 +409,7 @@ build_for_target() {
     local -a FAM_SOURCES=()
     if [ -z "$FAP_SOURCES" ] && [ -z "$FAP_SINGLE_SOURCE" ] && [ -f "$APP_DIR/application.fam" ]; then
         local APP_INFO
-        APP_INFO=$(python3 "$SCRIPT_DIR/tools/fap_app_info.py" "$APP_DIR" 2>/dev/null || true)
+        APP_INFO=$("$PYTHON" "$SCRIPT_DIR/tools/fap_app_info.py" "$APP_DIR" 2>/dev/null || true)
         while IFS=$'\t' read -r kind val; do
             case "$kind" in
                 APPSOURCE)  [ -n "$val" ] && FAM_SOURCES+=("$APP_DIR/$val") ;;
@@ -532,7 +538,7 @@ build_for_target() {
     if [ -n "$APP_ICON" ] && [ -f "$APP_ICON" ]; then
         ICON_ARG="--icon $APP_ICON"
     fi
-    python3 "$SCRIPT_DIR/tools/fap_manifest.py" \
+    "$PYTHON" "$SCRIPT_DIR/tools/fap_manifest.py" \
         --name "$APP_NAME" \
         --api-major 1 --api-minor 0 \
         --target 32 \
@@ -560,7 +566,7 @@ build_for_target() {
     # Informational only: the .fal is already produced; missing symbols are
     # resolved by adding them to firmware_api.c (tools/add_symbol.py). Don't
     # let a non-zero exit abort the build under `set -e`.
-    python3 "$PROJECT_DIR/tools/check_fap_symbols.py" "$API_FILE" "$BUILD_DIR/undef_syms.txt" || true
+    "$PYTHON" "$PROJECT_DIR/tools/check_fap_symbols.py" "$API_FILE" "$BUILD_DIR/undef_syms.txt" || true
 
     echo "  ✓ $OUTPUT ($SIZE bytes, $SECTIONS sections)"
 }
@@ -583,7 +589,7 @@ done
 # recurse. Output goes to <appid>_assets/plugins/ for deployment to the SD at
 # /ext/apps_assets/<mainappid>/plugins/.
 if [ -z "$FAP_SOURCES" ] && [ -z "$FAP_OUTPUT_NAME" ] && [ -f "$APP_DIR/application.fam" ]; then
-    PLUGIN_INFO=$(python3 "$SCRIPT_DIR/tools/fap_app_info.py" "$APP_DIR" 2>/dev/null | grep '^PLUGIN' || true)
+    PLUGIN_INFO=$("$PYTHON" "$SCRIPT_DIR/tools/fap_app_info.py" "$APP_DIR" 2>/dev/null | grep '^PLUGIN' || true)
     if [ -n "$PLUGIN_INFO" ]; then
         echo ""
         echo "━━━ Embedded plugins (fal_embedded) ━━━"
