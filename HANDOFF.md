@@ -10,6 +10,17 @@ Owner's GitHub backup of this work: **private repo `github.com/GYRAG/t-flipper`*
 (branch pushed to its `main`). Upstream is `github.com/Sor3nt/Flipper-Zero-ESP32-Port`
 — **`origin` points at upstream; never push there.** Work branch here: `tembed-ports`.
 
+## At a glance
+
+- **Apps ported** (`applications_user/`): **resistors**, **net_calculator** (IPv4/VLSM subnet
+  calculator), **wikiflip** (offline cybersecurity dictionary), **fortune_spinner**.
+- **New app built here**: **coloranim** — full-color 320×170 animation player.
+- **New tool**: `tools/compile_animation.py` — GIF/PNG → animation pack (mono or color).
+- **Firmware improvements**: 432-symbol FAP API export audit; WiFi RAM fix (upstream merge);
+  encoder keypad fix (`number_input`); app-browser speedup (thread pin + FAP icon cache).
+
+Details and file paths for each are in §3.
+
 ---
 
 ## 1. Hardware & UI model (the constraints everything follows from)
