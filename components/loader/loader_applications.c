@@ -1,5 +1,6 @@
 #include "loader.h"
 #include "loader_applications.h"
+#include "fap_icon_cache.h"
 #include <dialogs/dialogs.h>
 #include <flipper_application/flipper_application.h>
 #include <assets_icons.h>
@@ -67,11 +68,15 @@ static LoaderApplicationsApp* loader_applications_app_alloc(void) {
 
     view_holder_attach_to_gui(app->view_holder, app->gui);
 
+    fap_icon_cache_open(app->storage);
+
     return app;
 } //-V773
 
 static void loader_applications_app_free(LoaderApplicationsApp* app) {
     furi_assert(app);
+
+    fap_icon_cache_close(app->storage);
 
     view_holder_free(app->view_holder);
     loading_free(app->loading);
@@ -92,8 +97,19 @@ static bool loader_applications_item_callback(
     LoaderApplicationsApp* loader_applications_app = context;
     furi_assert(loader_applications_app);
     if(furi_string_end_with(path, ".fap")) {
-        return flipper_application_load_name_and_icon(
-            path, loader_applications_app->storage, icon_ptr, item_name);
+        Storage* storage = loader_applications_app->storage;
+        /* Cache hit avoids re-opening + parsing the FAP (name + icon decode). */
+        if(fap_icon_cache_get(storage, path, *icon_ptr, item_name)) {
+            return true;
+        }
+        bool ok = flipper_application_load_name_and_icon(path, storage, icon_ptr, item_name);
+        if(ok) {
+            FileInfo fi;
+            if(storage_common_stat(storage, furi_string_get_cstr(path), &fi) == FSE_OK) {
+                fap_icon_cache_put(path, fi.size, *icon_ptr, furi_string_get_cstr(item_name));
+            }
+        }
+        return ok;
     } else {
         path_extract_filename(path, item_name, false);
         memcpy(*icon_ptr, icon_get_frame_data(&I_js_script_10px, 0), FAP_MANIFEST_MAX_ICON_SIZE);

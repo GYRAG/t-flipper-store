@@ -212,12 +212,27 @@ void furi_thread_scrub(void) {
    PSRAM stacks safe even across flash writes. We therefore prefer PSRAM to free
    the very scarce internal DRAM, falling back to internal if PSRAM is full.
    Revert this (internal-first) if flash-write crashes reappear. */
+/* A few latency-sensitive threads keep their (small) stacks in internal RAM
+   despite the PSRAM-first policy above: on a PSRAM stack their CPU-bound work is
+   noticeably slower. "LoaderApplications" decodes every FAP's compressed icon
+   when the app list opens — on PSRAM that makes the list take seconds. Their
+   stacks are only a few KB, so this doesn't meaningfully cut into the internal
+   DRAM the WiFi driver needs. Add names here sparingly. */
+static bool furi_thread_stack_prefer_internal(const char* name) {
+    return name && (strcmp(name, "LoaderApplications") == 0);
+}
+
 static StackType_t* furi_thread_alloc_stack(const char* name, uint32_t stack_size) {
-    StackType_t* buffer = heap_caps_malloc(stack_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    StackType_t* buffer = NULL;
+    if(!furi_thread_stack_prefer_internal(name)) {
+        buffer = heap_caps_malloc(stack_size, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    }
     if(!buffer) {
         buffer = heap_caps_malloc(stack_size, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
-        FURI_LOG_W(TAG, "Stack for '%s' (%lu B) in internal RAM (PSRAM full)",
-            name ? name : "?", (unsigned long)stack_size);
+        if(!furi_thread_stack_prefer_internal(name)) {
+            FURI_LOG_W(TAG, "Stack for '%s' (%lu B) in internal RAM (PSRAM full)",
+                name ? name : "?", (unsigned long)stack_size);
+        }
     }
     return buffer;
 }
