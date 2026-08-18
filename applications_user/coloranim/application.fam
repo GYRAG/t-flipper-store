@@ -1,0 +1,11 @@
+App(
+    appid="coloranim",
+    name="Color Animations",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="coloranim_app",
+    requires=["gui"],
+    stack_size=4 * 1024,
+    fap_category="Tools",
+    fap_description="Play full-color 320x170 animations from /ext/apps_data/coloranim",
+    fap_author="kinkl",
+)
