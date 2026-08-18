@@ -13,13 +13,23 @@ Owner's GitHub backup of this work: **private repo `github.com/GYRAG/t-flipper`*
 ## At a glance
 
 - **Apps ported** (`applications_user/`): **resistors**, **net_calculator** (IPv4/VLSM subnet
-  calculator), **wikiflip** (offline cybersecurity dictionary), **fortune_spinner**.
+  calculator), **wikiflip** (offline cybersecurity dictionary), **fortune_spinner**, **tetris**.
 - **New app built here**: **coloranim** — full-color 320×170 animation player.
+- **App store** (`store/`): Flipper-themed website that installs FAPs to the device over
+  **USB / Web-Serial → Flipper RPC**, one click, no toolchain. Proven working.
 - **New tool**: `tools/compile_animation.py` — GIF/PNG → animation pack (mono or color).
 - **Firmware improvements**: 432-symbol FAP API export audit; WiFi RAM fix (upstream merge);
   encoder keypad fix (`number_input`); app-browser speedup (thread pin + FAP icon cache).
 
 Details and file paths for each are in §3.
+
+### Companion docs (read these next)
+- **FUTURE_PLANS.md** — where this is going: hosting the store, catalog CI, an on-device
+  FAP manager + WiFi store built into the firmware, preinstalled apps, and the honest
+  "have we diverged from upstream?" answer (short version: no — additive superset).
+- **APPSTORE_PLAN.md** — store architecture + the exact RPC-over-USB protocol facts
+  (DTR, `start_rpc_session`, one command_id per file, reply-only-on-final-chunk).
+- **BUGS.md** — open crashes (tetris, fortune) and why they need a coredump to diagnose.
 
 ---
 
