@@ -36,3 +36,6 @@ graphify-out/
 release/
 
 /tmp/
+
+# store test FAPs are build artifacts (rebuilt from applications_user/)
+store/faps/

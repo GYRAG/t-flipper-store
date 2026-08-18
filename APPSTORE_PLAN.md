@@ -6,6 +6,24 @@ no WiFi setup, no accounts, reuses the flasher pattern).
 
 ---
 
+## Status — 2026-08-18: the spike WORKS ✅
+
+One-click USB install is **proven end-to-end**: the Flipper-themed site (`store/`)
+connects over Web Serial, speaks Flipper RPC, and writes a **complete, launchable**
+`.fap` to `/ext/apps/<cat>/`. Settled decisions: site uses the **Flipper pixel theme**
+(done); the **owner verifies** which apps actually run (curation); each app carries a
+**firmware-compat tag** (`stock` vs `modified`) that CI can auto-set from the FAP's
+undefined-symbol check.
+
+### RPC-over-USB protocol facts (learned the hard way — for whoever builds the CI/site)
+- The USB CDC only accepts input once the host asserts **DTR** (`setSignals({dataTerminalReady:true})`).
+- The CLI prompt is `>: `; sending `start_rpc_session\r` switches this single CDC channel into protobuf RPC.
+- **Flush the RX buffer** after `start_rpc_session` (drop the CLI echo) before parsing RPC frames, or the CLI `\r` gets read as a message length and desyncs the parser.
+- `storage_write` chunking: use **one command_id for the whole file** (a change mid-write makes the device reset and re-truncate via `FSOM_CREATE_ALWAYS`), and the device **replies only on the final chunk** (`has_next=false`) — stream the intermediate chunks with light pacing so its RPC buffer drains.
+- Frames are length-delimited protobuf (varint length + PB_Main). Tags: `PB_Main.storage_write_request=11`, `mkdir=13`, `WriteRequest{path=1, file=2}`, `File.data=4`, `command_status=2`.
+
+Working implementation of all of the above lives in `store/index.html`.
+
 ## Key finding — the device side is already done
 
 The port already implements the **full Flipper RPC over USB CDC**:

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>T-Embed App Store</title>
+<style>
+  :root{
+    --orange:#ff8200; --black:#000; --white:#fff; --dim:#8a8a8a;
+    --bg:#0a0a0a; --panel:#141414; --line:#2a2a2a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--black);color:var(--white);
+    font-family:"Courier New",ui-monospace,Menlo,Consolas,monospace;
+    image-rendering:pixelated;-webkit-font-smoothing:none;}
+  a{color:var(--orange)}
+  .wrap{max-width:1000px;margin:0 auto;padding:16px}
+  /* pixel border helper: hard 3px border + hard shadow, no radius */
+  .px{border:3px solid var(--white);box-shadow:6px 6px 0 #000;background:var(--panel)}
+  header{background:var(--orange);color:var(--black);border:3px solid #000;
+    box-shadow:6px 6px 0 #000;padding:14px 16px;margin-bottom:20px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-weight:900}
+  header .dolphin{font-size:22px;line-height:1}
+  .btn{font-family:inherit;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    cursor:pointer;border:3px solid #000;background:var(--white);color:#000;
+    padding:8px 14px;box-shadow:3px 3px 0 #000;transition:none}
+  .btn:hover{background:var(--orange)}
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 #000}
+  .btn.o{background:var(--orange)}
+  .btn:disabled{background:#333;color:#777;border-color:#555;box-shadow:none;cursor:not-allowed}
+  .status{display:flex;align-items:center;gap:8px;font-size:13px}
+  .dot{width:12px;height:12px;background:#c22;border:2px solid #000;display:inline-block}
+  .dot.on{background:#2c2}
+  .banner{padding:10px 14px;margin-bottom:18px;font-size:13px;line-height:1.5}
+  .banner b{color:var(--orange)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .card{padding:14px;display:flex;flex-direction:column;gap:8px}
+  .card h3{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:1px}
+  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .tag{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    padding:2px 6px;border:2px solid #000}
+  .tag.cat{background:var(--white);color:#000}
+  .tag.stock{background:#2c2;color:#000}
+  .tag.modified{background:var(--orange);color:#000}
+  .desc{font-size:13px;color:#cfcfcf;line-height:1.45;min-height:36px}
+  .meta{font-size:11px;color:var(--dim)}
+  .card .btn{align-self:flex-start;margin-top:4px}
+  #log{margin-top:22px;padding:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;
+    max-height:240px;overflow:auto;background:#050505;border:3px solid var(--line);color:#b9ffb9}
+  #log .e{color:#ff7b7b}
+  #log .o{color:var(--orange)}
+  .hint{font-size:12px;color:var(--dim);margin-top:6px}
+  footer{margin:26px 0 8px;font-size:11px;color:var(--dim);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="row" style="gap:12px">
+      <span class="dolphin">( •_•)&gt;</span>
+      <h1>T-Embed App Store</h1>
+    </div>
+    <div class="row" style="gap:12px">
+      <span class="status"><span id="dot" class="dot"></span><span id="stat">Not connected</span></span>
+      <button id="connect" class="btn o">Connect T-Embed</button>
+    </div>
+  </header>
+
+  <div class="banner px">
+    <b>First time?</b> On the T-Embed: hold <b>Back</b> to reach the lock menu → enable
+    <b>qFlipper</b> (USB bridge). Plug in USB, then click <b>Connect T-Embed</b> (Chrome/Edge only).
+    Then hit <b>Install</b> on any app — it copies straight to <b>/ext/apps/&lt;category&gt;/</b>.
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+  <div id="log" class="px">store ready.\n</div>
+  <div class="hint">Tip: apps tagged <span class="tag modified">MODIFIED</span> need our firmware
+    (extra exported symbols); <span class="tag stock">STOCK</span> run on the original port firmware too.</div>
+
+  <footer>USB / Web-Serial install via Flipper RPC · packs & FAPs compiled for ESP32-S3 (Xtensa)</footer>
+</div>
+
+<script>
+"use strict";
+const log = (m,cls="")=>{const l=document.getElementById("log");
+  l.innerHTML += (cls?`<span class="${cls}">${m}</span>`:m)+"\n"; l.scrollTop=l.scrollHeight;};
+const setStatus=(t,on)=>{document.getElementById("stat").textContent=t;
+  document.getElementById("dot").classList.toggle("on",!!on);};
+
+/* ---------- Web Serial + Flipper RPC ---------- */
+let port=null, writer=null, reader=null, rxBuf=new Uint8Array(0), cmdId=1;
+
+function u8concat(a,b){const c=new Uint8Array(a.length+b.length);c.set(a);c.set(b,a.length);return c;}
+function varint(n){const o=[];n=n>>>0;while(n>0x7f){o.push((n&0x7f)|0x80);n>>>=7;}o.push(n&0x7f);return Uint8Array.from(o);}
+function field(tag,wire,payload){ // payload: Uint8Array (len-delimited) or number (varint)
+  const t=varint((tag<<3)|wire);
+  if(wire===0){return u8concat(t,varint(payload));}
+  return u8concat(u8concat(t,varint(payload.length)),payload);
+}
+const enc=new TextEncoder();
+
+// PB_Storage_File { data=4 }
+function encFile(dataChunk){return field(4,2,dataChunk);}
+// PB_Storage_WriteRequest { path=1, file=2 }
+function encWrite(path,dataChunk){
+  return u8concat(field(1,2,enc.encode(path)), field(2,2,encFile(dataChunk)));
+}
+// PB_Storage_MkdirRequest { path=1 }
+function encMkdir(path){return field(1,2,enc.encode(path));}
+// PB_Main { command_id=1, has_next=3, storage_write_request=11, storage_mkdir_request=13 }
+function frameMain(id,hasNext,contentTag,contentBytes){
+  let m=field(1,0,id);
+  if(hasNext) m=u8concat(m,field(3,0,1));
+  m=u8concat(m,field(contentTag,2,contentBytes));
+  return u8concat(varint(m.length),m); // length-delimited frame
+}
+
+let VERBOSE=true; // log raw bytes from the device so we can see CLI/RPC state
+function printable(u8){let s="";for(const b of u8){s+=(b>=32&&b<127)?String.fromCharCode(b):(b===13?"\\r":b===10?"\\n":"·");}return s;}
+async function startReadLoop(){
+  try{
+    while(true){
+      const {value,done}=await reader.read();
+      if(done) break;
+      if(value&&value.length){ rxBuf=u8concat(rxBuf,value); if(VERBOSE) log("RX «"+printable(value)+"»"); }
+    }
+  }catch(e){ if(VERBOSE) log("read loop ended: "+e.message); }
+}
+async function readByte(){
+  const t0=Date.now();
+  while(rxBuf.length===0){ if(Date.now()-t0>5000) throw new Error("timeout"); await new Promise(r=>setTimeout(r,5)); }
+  const b=rxBuf[0]; rxBuf=rxBuf.slice(1); return b;
+}
+async function readVarint(){let shift=0,val=0,b;do{b=await readByte();val|=(b&0x7f)<<shift;shift+=7;}while(b&0x80);return val>>>0;}
+// read one length-delimited PB_Main; return {status} (field 2 command_status, 0 = OK)
+async function readMain(timeoutMs=4000){
+  const len=await withTimeout(readVarint(),timeoutMs);
+  const buf=new Uint8Array(len);
+  for(let i=0;i<len;i++) buf[i]=await readByte();
+  // minimal parse: scan for field 2 (command_status) varint
+  let i=0,status=0;
+  while(i<buf.length){
+    let sh=0,key=0,b; do{b=buf[i++];key|=(b&0x7f)<<sh;sh+=7;}while(b&0x80);
+    const f=key>>>3, w=key&7;
+    if(w===0){let s=0,v=0,c;do{c=buf[i++];v|=(c&0x7f)<<s;s+=7;}while(c&0x80); if(f===2)status=v>>>0;}
+    else if(w===2){let s=0,l=0,c;do{c=buf[i++];l|=(c&0x7f)<<s;s+=7;}while(c&0x80); i+=l;}
+    else if(w===5){i+=4;} else if(w===1){i+=8;} else break;
+  }
+  return {status};
+}
+function withTimeout(p,ms){return Promise.race([p,new Promise((_,r)=>setTimeout(()=>r(new Error("timeout")),ms))]);}
+
+async function connect(){
+  try{
+    port=await navigator.serial.requestPort();
+    await port.open({baudRate:115200});
+    // The device's USB CDC only counts as connected when the host asserts DTR
+    // (furi_hal_usb_cdc.c: ctrl_line_state & DTR). Without this it ignores us.
+    try{ await port.setSignals({dataTerminalReady:true, requestToSend:true}); }catch(_){}
+    writer=port.writable.getWriter(); reader=port.readable.getReader();
+    startReadLoop(); // fills rxBuf and logs raw RX
+    log("port opened, DTR asserted. probing CLI…","o");
+
+    // Probe: a bare CR should make the CLI print a prompt if this channel is the CLI.
+    await writer.write(enc.encode("\r"));
+    await new Promise(r=>setTimeout(r,600));
+
+    // Try to enter RPC mode (stock Flipper command). Watch RX to see if it's accepted.
+    log("sending start_rpc_session…","o");
+    await writer.write(enc.encode("start_rpc_session\r"));
+    await new Promise(r=>setTimeout(r,600));
+
+    setStatus("Connected",true);
+    document.getElementById("connect").textContent="Connected";
+    log("— check the RX lines above: a '>' prompt means CLI is here; garbage/echo of","o");
+    log("  our command means RPC didn't switch. Paste this log back if install hangs.","o");
+  }catch(e){log("connect failed: "+e.message,"e");setStatus("Not connected",false);}
+}
+
+async function rpcMkdir(path){
+  await writer.write(frameMain(++cmdId,false,13,encMkdir(path)));
+  try{await readMain();}catch(e){/* mkdir on existing dir returns error; ignore */}
+}
+async function rpcWriteFile(path,bytes){
+  const CHUNK=512;
+  const id=++cmdId; // ONE command_id for the whole file: the device resets & re-truncates if it changes mid-write
+  for(let off=0;off<bytes.length;off+=CHUNK){
+    const chunk=bytes.slice(off,off+CHUNK);
+    const hasNext=off+CHUNK<bytes.length;
+    await writer.write(frameMain(id,hasNext,11,encWrite(path,chunk)));
+    if(hasNext){
+      // The device replies only on the final chunk. Pace the stream so its RPC input buffer drains.
+      await new Promise(r=>setTimeout(r,8));
+      if((((off/CHUNK)|0)%16)===0) log(`  …${off+CHUNK}/${bytes.length} bytes`);
+    }else{
+      const {status}=await readMain(); // single response for the whole write
+      if(status!==0) throw new Error("device returned status "+status);
+    }
+  }
+}
+
+async function install(app){
+  if(!port){log("connect the T-Embed first.","e");return;}
+  try{
+    // Flush leftover CLI text (prompt + start_rpc_session echo) so the RPC
+    // response parser starts clean on the binary protobuf stream. Without this
+    // it read the CLI '\r' as a message length, desynced, timed out, and left a
+    // truncated .fap on the SD (no icon, won't load).
+    rxBuf=new Uint8Array(0);
+    VERBOSE=false; // RPC responses are binary; don't spam the log
+    log(`installing "${app.name}"…`,"o");
+    const res=await fetch(app.fap); if(!res.ok) throw new Error("fetch "+app.fap+" -> "+res.status);
+    const bytes=new Uint8Array(await res.arrayBuffer());
+    const dir=`/ext/apps/${app.category}`;
+    const dest=`${dir}/${app.id}.fap`;
+    await rpcMkdir(dir);
+    await rpcWriteFile(dest,bytes);
+    log(`✓ installed to ${dest}  (${bytes.length} bytes)`,"o");
+    log(`  find it on the device: Apps → ${app.category} → ${app.name}`);
+  }catch(e){log("install failed: "+e.message,"e");}
+}
+
+/* ---------- catalog ---------- */
+function badge(fw){return fw==="modified"
+  ? '<span class="tag modified" title="needs our firmware">MODIFIED FW</span>'
+  : '<span class="tag stock" title="runs on stock port firmware too">STOCK OK</span>';}
+async function loadCatalog(){
+  try{
+    const cat=await (await fetch("catalog.json")).json();
+    const grid=document.getElementById("grid");
+    grid.innerHTML="";
+    cat.apps.forEach(app=>{
+      const c=document.createElement("div"); c.className="card px";
+      c.innerHTML=`<h3>${app.name}</h3>
+        <div class="row"><span class="tag cat">${app.category}</span>${badge(app.fw)}</div>
+        <div class="desc">${app.description||""}</div>
+        <div class="meta">${(app.size/1024).toFixed(1)} KB · ${app.author||""}</div>`;
+      const b=document.createElement("button"); b.className="btn"; b.textContent="Install";
+      b.onclick=()=>install(app); c.appendChild(b); grid.appendChild(c);
+    });
+    log(`catalog loaded: ${cat.apps.length} apps.`);
+  }catch(e){log("catalog load failed: "+e.message,"e");}
+}
+
+document.getElementById("connect").onclick=connect;
+if(!("serial" in navigator)){
+  log("Web Serial not supported — use Chrome or Edge (desktop).","e");
+}
+loadCatalog();
+</script>
+</body>
+</html>

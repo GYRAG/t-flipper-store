@@ -1,0 +1,46 @@
+{
+  "name": "T-Embed App Store",
+  "note": "fw: 'stock' = runs on the original creator's port firmware too; 'modified' = needs our firmware (extra exported symbols).",
+  "apps": [
+    {
+      "id": "resistors",
+      "name": "Resistance Calculator",
+      "category": "Tools",
+      "author": "Lewis Westbury / port",
+      "description": "Resistor color-code / VLSM calculator. OK cycles bands.",
+      "size": 27160,
+      "fw": "stock",
+      "fap": "faps/resistors.fap"
+    },
+    {
+      "id": "net_calculator",
+      "name": "Net Calculator",
+      "category": "Tools",
+      "author": "WolfRor / port",
+      "description": "Offline IPv4 VLSM subnet calculator.",
+      "size": 13084,
+      "fw": "modified",
+      "fap": "faps/net_calculator.fap"
+    },
+    {
+      "id": "wikiflip",
+      "name": "WikiFlip",
+      "category": "Tools",
+      "author": "Roger Arana / port",
+      "description": "Offline cybersecurity dictionary.",
+      "size": 65764,
+      "fw": "stock",
+      "fap": "faps/wikiflip.fap"
+    },
+    {
+      "id": "coloranim",
+      "name": "Color Animations",
+      "category": "Media",
+      "author": "port",
+      "description": "Play full-color 320x170 animations from SD.",
+      "size": 9992,
+      "fw": "stock",
+      "fap": "faps/coloranim.fap"
+    }
+  ]
+}
