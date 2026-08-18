@@ -1,0 +1,37 @@
+{
+  "_comment": "Curated half of the store catalog — the part a human owns. The machine half (name, size, fw tag, fap path) is filled in by tools/make_catalog.py at build time; see store/catalog.json (generated, do not edit).",
+  "_adding_an_app": "Add an entry here, then make sure it BUILDS (CI proves that) and RUNS on a real device (only you can prove that). dir = folder under applications_user/, id = appid from its application.fam.",
+  "apps": [
+    {
+      "id": "resistors",
+      "dir": "resistors",
+      "category": "Tools",
+      "author": "Lewis Westbury / port",
+      "description": "Resistor color-code / VLSM calculator. OK cycles bands.",
+      "url": "https://github.com/instantiator/flipper-zero-experimental-apps/tree/main/resistors"
+    },
+    {
+      "id": "net_calculator",
+      "dir": "net_calculator",
+      "category": "Tools",
+      "author": "WolfRor / port",
+      "description": "Offline IPv4 VLSM subnet calculator.",
+      "url": "https://www.wolfror.com/products/netcalculator-for-flipper-zero"
+    },
+    {
+      "id": "wikiflip",
+      "dir": "wikiflip",
+      "category": "Tools",
+      "author": "Roger Arana / port",
+      "description": "Offline cybersecurity dictionary."
+    },
+    {
+      "id": "coloranim",
+      "dir": "coloranim",
+      "category": "Media",
+      "author": "port",
+      "description": "Play full-color 320x170 animations from SD."
+    }
+  ],
+  "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
+}

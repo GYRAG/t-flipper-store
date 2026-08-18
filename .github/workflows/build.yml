@@ -92,6 +92,35 @@ jobs:
           source ~/esp/esp-idf/export.sh
           bash ./build.sh --board ${{ matrix.board.script_key }} --build-only
 
+      # ── App store: build the curated FAPs and regenerate the catalog ──────
+      # t_embed only: buildFap.sh's TARGETS list has just lilygo_t_embed_cc1101
+      # uncommented, and the store serves Xtensa binaries. Runs after Build
+      # because buildFap.sh needs build_t_embed/config to exist.
+      - name: Build store FAPs + catalog
+        if: matrix.board.script_key == 't_embed'
+        run: |
+          source ~/esp/esp-idf/export.sh
+          # tools/fam/compile_icons.py imports PIL at module level; without
+          # Pillow every FAP silently loses its icon and fap_manifest.py fails.
+          # Install via `python3 -m pip` specifically: buildFap.sh defaults to
+          # PYTHON=python3, so Pillow must land in THAT interpreter.
+          python3 -m pip install --quiet pillow
+
+          # The stock/modified tag is a diff against the ORIGINAL port's API
+          # table (937 symbols vs our 1372), so fetch it from Sor3nt directly —
+          # this repo's own origin is the store repo, not upstream.
+          git fetch --depth=1 https://github.com/Sor3nt/Flipper-Zero-ESP32-Port.git main
+          git show FETCH_HEAD:components/flipper_application/flipper_application/firmware_api.c \
+            > /tmp/stock_api.c
+
+          for dir in $(jq -r '.apps[].dir' store/apps.json); do
+            echo "::group::FAP $dir"
+            ./buildFap.sh "applications_user/$dir"
+            echo "::endgroup::"
+          done
+
+          python tools/make_catalog.py --stock-api /tmp/stock_api.c
+
       - name: Package artifacts
         run: |
           BOARD="${{ matrix.board.name }}"
@@ -132,6 +161,17 @@ jobs:
           echo "=== Staged artifact contents ==="
           ls -lh "$STAGE" "$STAGE/bootloader" "$STAGE/partition_table"
 
+      # Must run AFTER "Package artifacts" — that step rm -rf's the staging dir.
+      - name: Stage store into the artifact
+        if: matrix.board.script_key == 't_embed'
+        run: |
+          mkdir -p artifact_staging/store/faps
+          cp store/index.html store/catalog.json artifact_staging/store/
+          for id in $(jq -r '.apps[].id' store/apps.json); do
+            cp "build_t_embed/fap/$id.fap" artifact_staging/store/faps/
+          done
+          ls -lh artifact_staging/store artifact_staging/store/faps
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -140,3 +180,72 @@ jobs:
           # Users unzip and immediately run flash_linux.sh or flash_windows.bat.
           path: artifact_staging/
           retention-days: 30
+
+  # ── Publish the flasher + app store as one site ─────────────────────────────
+  # Assembles the EXISTING pages (interface.html, store/index.html) against the
+  # exact relative paths they already fetch, so neither page needs path edits.
+  deploy-pages:
+    name: Publish site
+    needs: build
+    # Default branch only — PRs still build, they just don't publish. Matched
+    # against the repo's actual default branch so this works whether the store
+    # repo calls it main or master (the push trigger above accepts both).
+    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Download board artifacts
+        uses: actions/download-artifact@v7
+        with:
+          path: artifacts
+
+      - name: Assemble site
+        run: |
+          set -eu
+          SITE=_site
+          T=artifacts/flipper-lilygo-t-embed-cc1101
+          W=artifacts/flipper-waveshare-c6-1.9
+
+          mkdir -p "$SITE/release/t-embed/latest" "$SITE/release/waveshare_c6_1.9/latest"
+
+          # The store page IS the site: it flashes firmware AND installs apps.
+          # It lives at the root so catalog.json, faps/ and release/ are siblings.
+          cp "$T/store/index.html"   "$SITE/index.html"
+          cp "$T/store/catalog.json" "$SITE/catalog.json"
+          cp -r "$T/store/faps"      "$SITE/faps"
+          cp favicon.ico             "$SITE/favicon.ico"
+
+          # The original single-purpose flasher, kept reachable as a fallback
+          # until the built-in flash path is confirmed on real hardware.
+          cp interface.html "$SITE/flasher-legacy.html"
+
+          # Flatten the bins to the paths interface.html's BOARDS table fetches.
+          cp "$T/furi_esp32.bin"                      "$SITE/release/t-embed/latest/furi_esp32.bin"
+          cp "$T/bootloader/bootloader.bin"           "$SITE/release/t-embed/latest/bootloader.bin"
+          cp "$T/partition_table/partition-table.bin" "$SITE/release/t-embed/latest/partition-table.bin"
+
+          cp "$W/furi_esp32.bin"                      "$SITE/release/waveshare_c6_1.9/latest/furi_esp32.bin"
+          cp "$W/bootloader/bootloader.bin"           "$SITE/release/waveshare_c6_1.9/latest/bootloader.bin"
+          cp "$W/partition_table/partition-table.bin" "$SITE/release/waveshare_c6_1.9/latest/partition-table.bin"
+
+          echo "=== site ==="
+          find "$SITE" -type f | sort
+          du -sh "$SITE"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5

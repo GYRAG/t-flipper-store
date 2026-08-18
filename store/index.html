@@ -3,91 +3,489 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ff8200">
+<link rel="preconnect" href="https://unpkg.com">
 <title>T-Embed App Store</title>
 <style>
   :root{
-    --orange:#ff8200; --black:#000; --white:#fff; --dim:#8a8a8a;
-    --bg:#0a0a0a; --panel:#141414; --line:#2a2a2a;
+    color-scheme: light;
+    /* The device, literally: orange body plastic, black bezel, backlit LCD. */
+    --orange:#ff8200;
+    --orange-lit:#ff9426;   /* the LCD with the backlight on */
+    --ink:#000;
+    --case:#f5f1e6;         /* the ivory plastic of the white edition */
+    --case-dim:#e2dcca;
+    --bezel:#141414;
+    --ok:#8fd694;
+    --sp:16px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--black);color:var(--white);
-    font-family:"Courier New",ui-monospace,Menlo,Consolas,monospace;
-    image-rendering:pixelated;-webkit-font-smoothing:none;}
-  a{color:var(--orange)}
-  .wrap{max-width:1000px;margin:0 auto;padding:16px}
-  /* pixel border helper: hard 3px border + hard shadow, no radius */
-  .px{border:3px solid var(--white);box-shadow:6px 6px 0 #000;background:var(--panel)}
-  header{background:var(--orange);color:var(--black);border:3px solid #000;
-    box-shadow:6px 6px 0 #000;padding:14px 16px;margin-bottom:20px;
-    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  header h1{margin:0;font-size:22px;letter-spacing:2px;text-transform:uppercase;font-weight:900}
-  header .dolphin{font-size:22px;line-height:1}
-  .btn{font-family:inherit;font-weight:900;text-transform:uppercase;letter-spacing:1px;
-    cursor:pointer;border:3px solid #000;background:var(--white);color:#000;
-    padding:8px 14px;box-shadow:3px 3px 0 #000;transition:none}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
+      transition-duration:.01ms !important}
+  }
+  body{
+    margin:0;
+    background:var(--orange);
+    /* Faint pixel grid — the halftone in Flipper's own branding. */
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 1px, transparent 1px 8px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 8px);
+    color:var(--ink);
+    font-family:ui-monospace,"Cascadia Mono","Courier New",Menlo,Consolas,monospace;
+    image-rendering:pixelated;-webkit-font-smoothing:none;
+    -webkit-tap-highlight-color:rgba(0,0,0,.2);
+    touch-action:manipulation;
+  }
+  a{color:var(--ink)}
+  .wrap{max-width:1180px;margin:0 auto;padding:var(--sp) var(--sp) 48px}
+
+  .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--orange);
+    padding:12px 16px;min-height:44px;display:flex;align-items:center;
+    font-weight:900;z-index:30}
+  .skip:focus{left:8px;top:8px}
+
+  /* ---- the pixel-art panel idiom: hard border, hard shadow, no radius ---- */
+  .px{border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45);background:var(--case)}
+
+  /* ---- THE DEVICE: black bezel wrapping a backlit LCD ---- */
+  .device{background:var(--bezel);border:4px solid var(--ink);border-radius:12px;
+    padding:14px;box-shadow:8px 8px 0 rgba(0,0,0,.45)}
+  .lcd{position:relative;background:var(--orange-lit);color:var(--ink);
+    padding:14px 16px;border-radius:3px;overflow:hidden}
+  .lcd::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px)}
+  .lcd h1{margin:0;font-size:clamp(20px,4.5vw,30px);letter-spacing:2px;
+    text-transform:uppercase;font-weight:900;text-wrap:balance}
+  .lcd .sub{margin:6px 0 0;font-size:13px;line-height:1.5;max-width:60ch}
+  /* `pre` keeps the spacing inside the face exactly as written. */
+  .dolphin{font-size:clamp(22px,5vw,34px);line-height:1;white-space:pre}
+  /* Only the eyes move, and they move by transform — the head keeps its exact
+     width because transforms don't affect layout. There is one space cell each
+     side inside the parens, so a ~half-cell shift stays clear of them. `em` so
+     it tracks the clamped font-size. */
+  #eyes{display:inline-block;transition:transform .32s ease-in-out}
+  #eyes.look-l{transform:translateX(-0.32em)}
+  #eyes.look-r{transform:translateX( 0.32em)}
+  #eyes.look-u{transform:translateY(-0.13em)}
+  #eyes.look-d{transform:translateY( 0.11em)}
+  /* Diagonals, so the scan doesn't only travel on the two axes. */
+  #eyes.look-ul{transform:translate(-0.28em,-0.11em)}
+  #eyes.look-dr{transform:translate( 0.28em, 0.09em)}
+
+  /* ---- buttons ---- */
+  .btn{font:inherit;font-weight:900;text-transform:uppercase;letter-spacing:1px;
+    cursor:pointer;border:3px solid var(--ink);background:var(--case);color:var(--ink);
+    /* 10px padding + 3px border + line-box == 44px, the minimum touch target. */
+    padding:10px 16px;box-shadow:3px 3px 0 var(--ink);text-decoration:none;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
+    transition:background-color .12s, transform .12s, box-shadow .12s}
   .btn:hover{background:var(--orange)}
-  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 #000}
+  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
   .btn.o{background:var(--orange)}
-  .btn:disabled{background:#333;color:#777;border-color:#555;box-shadow:none;cursor:not-allowed}
-  .status{display:flex;align-items:center;gap:8px;font-size:13px}
-  .dot{width:12px;height:12px;background:#c22;border:2px solid #000;display:inline-block}
-  .dot.on{background:#2c2}
-  .banner{padding:10px 14px;margin-bottom:18px;font-size:13px;line-height:1.5}
-  .banner b{color:var(--orange)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
-  .card{padding:14px;display:flex;flex-direction:column;gap:8px}
-  .card h3{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:1px}
+  .btn.o:hover{background:var(--case)}
+  .btn.full{width:100%}
+  /* Visually smaller, but never below the 44px touch target. */
+  .btn.sm{padding:6px 12px;font-size:11px;box-shadow:2px 2px 0 var(--ink)}
+  /* Unavailable-but-explainable uses aria-disabled, NOT the disabled attribute:
+     a disabled button is removed from the tab order, so a keyboard user would
+     never reach it and never hear why it can't be used. */
+  .btn:disabled,.btn[aria-disabled="true"]{background:var(--case-dim);color:#575757;
+    border-color:#575757;box-shadow:none;cursor:not-allowed}
+  .btn[aria-disabled="true"]:hover{background:var(--case-dim)}
+  .btn[aria-disabled="true"]:active{transform:none;box-shadow:none}
+  /* One focus style that survives on orange, ivory AND black grounds. */
+  :focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+
+  h2{font-size:13px;letter-spacing:3px;text-transform:uppercase;margin:0 0 12px;
+    display:flex;align-items:center;gap:10px}
+  h2::after{content:"";flex:1;height:4px;background:var(--ink)}
+
+  .banner{padding:12px 14px;margin-bottom:24px;font-size:13px;line-height:1.6}
+  .banner b{text-transform:uppercase;letter-spacing:1px}
+  .banner ol{margin:8px 0 0;padding-left:20px}
+  .banner li{margin:3px 0}
+
+  /* ---- two columns: catalog left, device controls + console right ---- */
+  .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start;
+    margin-top:24px}
+  .side{display:flex;flex-direction:column;gap:18px;min-width:0}
+  @media (max-width:920px){
+    .layout{grid-template-columns:1fr}
+    .side{order:-1}                   /* controls come first on a phone */
+  }
+  /* Desktop: pin the sidebar to the viewport so the console stays put however
+     long the app list grows. The console takes the leftover column height and
+     scrolls internally, so the apps scroll while it does not. */
+  @media (min-width:921px){
+    .side{position:sticky;top:16px;max-height:calc(100vh - 32px)}
+    .panel.console{flex:1;min-height:0;display:flex;flex-direction:column}
+    .panel.console #log{flex:1;min-height:0;max-height:none}
+  }
+
+  /* ---- connection state: the single most important thing on the page ---- */
+  .devstate{display:flex;gap:10px;align-items:center;padding:12px;
+    border:3px solid var(--ink);font-size:12px;line-height:1.45}
+  .devstate b{display:block;font-size:14px;text-transform:uppercase;letter-spacing:1px}
+  .devstate .beacon{width:18px;height:18px;flex:none;border:3px solid var(--ink);
+    background:var(--bezel)}
+  .devstate[data-state="off"]{background:var(--case-dim)}
+  .devstate[data-state="busy"]{background:var(--orange)}
+  .devstate[data-state="on"]{background:var(--ok)}
+  .devstate[data-state="on"] .beacon{background:var(--ink)}
+  /* A slow pulse while connecting; killed entirely under reduced-motion. */
+  .devstate[data-state="busy"] .beacon{animation:blink 1s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:.15}}
+  @media (prefers-reduced-motion: reduce){.devstate .beacon{animation:none}}
+
+  .panel{padding:14px}
+  .panel h2{margin-bottom:10px}
+  .panel .stack{display:flex;flex-direction:column;gap:10px}
+  .panel .note{font-size:11px;line-height:1.6;color:#3a3a3a}
+
+  /* ---- app grid ---- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
+  .card{padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0}
+  .card h3{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:1px;
+    text-wrap:balance;overflow-wrap:anywhere}
   .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
   .tag{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
-    padding:2px 6px;border:2px solid #000}
-  .tag.cat{background:var(--white);color:#000}
-  .tag.stock{background:#2c2;color:#000}
-  .tag.modified{background:var(--orange);color:#000}
-  .desc{font-size:13px;color:#cfcfcf;line-height:1.45;min-height:36px}
-  .meta{font-size:11px;color:var(--dim)}
-  .card .btn{align-self:flex-start;margin-top:4px}
-  #log{margin-top:22px;padding:12px;font-size:12px;line-height:1.5;white-space:pre-wrap;
-    max-height:240px;overflow:auto;background:#050505;border:3px solid var(--line);color:#b9ffb9}
-  #log .e{color:#ff7b7b}
-  #log .o{color:var(--orange)}
-  .hint{font-size:12px;color:var(--dim);margin-top:6px}
-  footer{margin:26px 0 8px;font-size:11px;color:var(--dim);text-align:center}
+    padding:2px 7px;border:2px solid var(--ink);color:var(--ink);white-space:nowrap}
+  .tag.cat{background:var(--case-dim)}
+  .tag.stock{background:var(--ok)}
+  .tag.modified{background:var(--orange)}
+  .desc{font-size:13px;line-height:1.5;color:#2a2a2a;min-height:38px;overflow-wrap:anywhere}
+  .meta{font-size:11px;color:#5a5a5a;font-variant-numeric:tabular-nums}
+  .meta a{color:#3a3a3a;text-decoration:underline;text-underline-offset:2px;font-weight:900}
+  .meta a:hover{color:var(--ink);background:var(--orange)}
+  .card .btn{align-self:flex-start;margin-top:2px}
+  .empty{padding:20px;font-size:13px;line-height:1.6}
+  /* Tag legend — sits above the grid because you need it to read the cards. */
+  .legend{margin:0 0 16px;padding:10px 12px;font-size:12px;line-height:1.9}
+
+  /* ---- console, now in the sidebar and collapsible ---- */
+  .console-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
+    margin-bottom:10px}
+  .console-head h2{margin:0;flex:1}
+  #log{padding:12px 14px;font-size:12px;line-height:1.6;white-space:pre-wrap;
+    max-height:300px;overflow:auto;overscroll-behavior:contain;
+    background:var(--orange-lit);color:var(--ink);border-radius:3px;
+    font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  #log .e{color:#7d0000;font-weight:900}
+  #log .o{font-weight:900}
+  [hidden]{display:none !important}
+
+  /* ---- flash dialog ---- */
+  dialog{border:4px solid var(--ink);background:var(--case);color:var(--ink);padding:0;
+    max-width:560px;width:calc(100% - 32px);box-shadow:10px 10px 0 rgba(0,0,0,.5)}
+  dialog::backdrop{background:rgba(0,0,0,.55)}
+  .dlg-head{background:var(--ink);color:var(--orange);padding:12px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px}
+  /* Error face: white on dark red (9:1), not orange on red. */
+  .dlg-head.err{background:#7d0000;color:#fff}
+  .dlg-head.err h2{color:#fff}
+  .dlg-head h2{margin:0;color:var(--orange)}
+  .dlg-head h2::after{display:none}
+  .dlg-body{padding:16px;display:flex;flex-direction:column;gap:14px}
+  .boards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media (max-width:520px){.boards{grid-template-columns:1fr}}
+  .board{padding:12px;text-align:left;font:inherit;cursor:pointer;
+    border:3px solid var(--ink);background:var(--case);box-shadow:3px 3px 0 var(--ink);
+    display:flex;flex-direction:column;gap:4px;min-height:44px}
+  .board:hover{background:var(--orange)}
+  .board[aria-pressed="true"]{background:var(--ink);color:var(--orange)}
+  .board b{font-size:13px;text-transform:uppercase;letter-spacing:1px}
+  .board span{font-size:11px}
+  .steps{margin:0;padding-left:20px;font-size:13px;line-height:1.65}
+  .steps li{margin:4px 0}
+  .steps b{background:var(--orange);padding:0 4px}
+  progress{width:100%;height:22px;border:3px solid var(--ink);background:var(--case-dim);
+    -webkit-appearance:none;appearance:none}
+  progress::-webkit-progress-bar{background:var(--case-dim)}
+  progress::-webkit-progress-value{background:var(--orange)}
+  progress::-moz-progress-bar{background:var(--orange)}
+  .flash-stat{font-size:12px;line-height:1.6;font-variant-numeric:tabular-nums;min-height:20px}
+  .flash-err{background:#7d0000;color:#fff;padding:10px 12px;font-size:12px;line-height:1.6}
+
+  footer{margin:28px 0 8px;font-size:11px;text-align:center;line-height:1.7}
+  footer a{font-weight:900}
 </style>
 </head>
 <body>
+<a class="skip" href="#apps">Skip to Apps</a>
 <div class="wrap">
-  <header>
-    <div class="row" style="gap:12px">
-      <span class="dolphin">( •_•)&gt;</span>
-      <h1>T-Embed App Store</h1>
-    </div>
-    <div class="row" style="gap:12px">
-      <span class="status"><span id="dot" class="dot"></span><span id="stat">Not connected</span></span>
-      <button id="connect" class="btn o">Connect T-Embed</button>
+
+  <!-- The device: black bezel + backlit LCD. This is the page's anchor image. -->
+  <header class="device">
+    <div class="lcd">
+      <div class="row" style="gap:14px;align-items:flex-start">
+        <span class="dolphin" id="dolphin" aria-hidden="true">( <span id="eyes">•_•</span> )&gt;</span>
+        <div style="min-width:0">
+          <h1>App Store</h1>
+          <p class="sub">Flash the firmware and install apps from one page, straight over
+            the USB cable. No toolchain, no SD-card shuffling.</p>
+        </div>
+      </div>
     </div>
   </header>
 
-  <div class="banner px">
-    <b>First time?</b> On the T-Embed: hold <b>Back</b> to reach the lock menu → enable
-    <b>qFlipper</b> (USB bridge). Plug in USB, then click <b>Connect T-Embed</b> (Chrome/Edge only).
-    Then hit <b>Install</b> on any app — it copies straight to <b>/ext/apps/&lt;category&gt;/</b>.
+  <div class="layout">
+    <main>
+      <div class="banner px">
+        <b>First time?</b>
+        <ol>
+          <li><b>Flash Firmware</b> (right) if your board is still running stock ESP32 firmware.</li>
+          <li>On the T&#8209;Embed: hold <b>Back</b> for the lock menu, then turn on <b>qFlipper</b>.</li>
+          <li>Press <b>Connect T&#8209;Embed</b>, then <b>Install</b> on any app below.</li>
+        </ol>
+      </div>
+
+      <h2 id="apps">Apps</h2>
+      <p class="legend px">Apps tagged <span class="tag modified">Modified FW</span> need
+        this port's firmware (it exports extra symbols).
+        <span class="tag stock">Stock OK</span> apps also run on the original firmware.</p>
+      <div id="grid" class="grid"></div>
+    </main>
+
+    <!-- Sidebar: everything that talks to the device, plus the console. -->
+    <aside class="side" aria-label="Device controls">
+      <section class="panel px">
+        <h2>Device</h2>
+        <div class="stack">
+          <div id="devstate" class="devstate" data-state="off" role="status">
+            <span class="beacon" aria-hidden="true"></span>
+            <span><b id="devstate-title">Not Connected</b>
+              <span id="devstate-hint">Press Connect to install apps.</span></span>
+          </div>
+          <button id="connect" class="btn o full">Connect T&#8209;Embed</button>
+          <button id="flash-open" class="btn full">Flash Firmware</button>
+          <p class="note">Connect to install apps. Flash only when putting this firmware
+            on the board for the first time, or updating it.</p>
+        </div>
+      </section>
+
+      <section class="panel px console">
+        <div class="console-head">
+          <h2>Console</h2>
+          <button id="log-toggle" class="btn sm" aria-expanded="true" aria-controls="log">Hide</button>
+        </div>
+        <div id="log" role="log" aria-live="polite" aria-label="Activity log">store ready.
+</div>
+      </section>
+    </aside>
   </div>
 
-  <div id="grid" class="grid"></div>
-
-  <div id="log" class="px">store ready.\n</div>
-  <div class="hint">Tip: apps tagged <span class="tag modified">MODIFIED</span> need our firmware
-    (extra exported symbols); <span class="tag stock">STOCK</span> run on the original port firmware too.</div>
-
-  <footer>USB / Web-Serial install via Flipper RPC · packs & FAPs compiled for ESP32-S3 (Xtensa)</footer>
+  <footer>
+    USB / Web&#8209;Serial · flashing via esptool&#8209;js, installs via Flipper RPC · FAPs compiled for ESP32&#8209;S3 (Xtensa)<br>
+    Built on the <a href="https://github.com/Sor3nt/Flipper-Zero-ESP32-Port">Flipper&#8209;Zero&#8209;ESP32&#8209;Port</a> by Sor3nt.
+  </footer>
 </div>
+
+<!-- Connection result. One dialog, two faces: success and failure-with-the-fix. -->
+<dialog id="conn-dlg" aria-labelledby="conn-title">
+  <div class="dlg-head" id="conn-head">
+    <h2 id="conn-title">Connected</h2>
+    <button id="conn-close" class="btn sm" aria-label="Close">Close</button>
+  </div>
+  <div class="dlg-body">
+    <p class="flash-stat" id="conn-msg" style="font-size:13px"></p>
+    <ol class="steps" id="conn-steps" hidden></ol>
+    <button id="conn-ok" class="btn o full">Browse Apps</button>
+  </div>
+</dialog>
+
+<!-- Flashing lives in a native <dialog>: focus trap and Esc-to-close for free. -->
+<dialog id="flash-dlg" aria-labelledby="flash-title">
+  <div class="dlg-head">
+    <h2 id="flash-title">Flash Firmware</h2>
+    <button id="flash-close" class="btn sm" aria-label="Close">Close</button>
+  </div>
+  <div class="dlg-body">
+    <div>
+      <p class="flash-stat" style="margin:0 0 8px"><b>1. Pick your board</b></p>
+      <div class="boards" id="boards"></div>
+    </div>
+
+    <div id="dl-steps">
+      <p class="flash-stat" style="margin:0 0 4px"><b>2. Put it in download mode</b></p>
+      <ol class="steps" id="dl-list"></ol>
+    </div>
+
+    <div>
+      <p class="flash-stat" style="margin:0 0 8px"><b>3. Flash</b></p>
+      <button id="flash-go" class="btn o full" aria-disabled="true">Select A Board First</button>
+    </div>
+
+    <progress id="flash-bar" max="100" value="0" hidden></progress>
+    <p class="flash-stat" id="flash-stat" role="status" aria-live="polite"></p>
+    <p class="flash-err" id="flash-err" hidden></p>
+  </div>
+</dialog>
 
 <script>
 "use strict";
 const log = (m,cls="")=>{const l=document.getElementById("log");
-  l.innerHTML += (cls?`<span class="${cls}">${m}</span>`:m)+"\n"; l.scrollTop=l.scrollHeight;};
-const setStatus=(t,on)=>{document.getElementById("stat").textContent=t;
-  document.getElementById("dot").classList.toggle("on",!!on);};
+  l.innerHTML += (cls?`<span class="${cls}">${m}</span>`:m)+"\n"; l.scrollTop=l.scrollHeight;
+  // Never let a collapsed console swallow an error.
+  if(cls==="e") showLog(true);};
+window.storeLog = log;
+
+/* ---------- console toggle ---------- */
+function showLog(on){
+  const l=document.getElementById("log"), b=document.getElementById("log-toggle");
+  l.hidden=!on; b.setAttribute("aria-expanded",String(on)); b.textContent = on?"Hide":"Show";
+  try{ localStorage.setItem("tembed.console", on?"1":"0"); }catch(_){}
+}
+document.getElementById("log-toggle").onclick=()=>{
+  showLog(document.getElementById("log").hidden);
+};
+try{ if(localStorage.getItem("tembed.console")==="0") showLog(false); }catch(_){}
+
+// An Install button that is merely greyed out is a dead end — it must stay
+// focusable (aria-disabled, not disabled) AND say why it can't be used yet.
+function setInstallState(b,ready,name){
+  if(name) b.dataset.appName=name;
+  const n=b.dataset.appName||"app";
+  b.setAttribute("aria-disabled", String(!ready));
+  b.setAttribute("aria-label", ready ? `Install ${n}` : `Install ${n} — connect your T-Embed first`);
+  b.title = ready ? `Install ${n}` : "Connect your T-Embed first";
+}
+/* ---------- the mascot ---------- */
+// He blinks and glances sideways. No bobbing — the head never moves, only the
+// face inside it. Every frame is exactly 7 characters, so the eyes shift within
+// the parentheses instead of the head changing width and jittering. The idle
+// frame is byte-identical to the original face.
+// Text can't be tweened, so the blink is a lid CLOSING over several frames
+// (•  ->  ·  ->  -  and back) rather than one hard cut. The glance is a real CSS
+// transform on the eyes, so it slides. Every eye string is 3 characters and the
+// transform doesn't affect layout, so the head never changes width.
+// `lids` is the blink; `express` are brief micro-expressions. Every string is
+// 3 characters so the eyes span never changes width.
+const MOODS={
+  off:{ open:"•_•", lids:["·_·","-_-","·_·"],
+        express:["•_-","o_o","._.","-_-"] },   // wink · curious · meek · squint
+  on: { open:"^_^", lids:["·_·","-_-","·_·"],
+        express:["^_-","o_o","•_•"] },         // wink · curious · neutral beat
+};
+const BLINK_STEP=55;      // ms per lid frame — ~275ms for the whole blink
+let mood="off", faceTimer=null;
+const lessMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const GAZE=["look-l","look-r","look-u","look-d","look-ul","look-dr"];
+const eyesEl=()=>document.getElementById("eyes");
+function setGaze(dir){
+  const e=eyesEl();
+  e.classList.remove(...GAZE);
+  if(dir) e.classList.add(dir);
+}
+function restEyes(){ const e=eyesEl(); e.textContent=MOODS[mood].open; setGaze(null); }
+
+// One timer chain, so clearTimeout() cancels a blink cleanly mid-sequence.
+function blinkOnce(done,step,i=0){
+  const lids=MOODS[mood].lids;
+  if(i>=lids.length){ restEyes(); faceTimer=setTimeout(done,60); return; }
+  eyesEl().textContent=lids[i];
+  faceTimer=setTimeout(()=>blinkOnce(done,step,i+1),step);
+}
+// Three flavours, so he isn't blinking on a metronome.
+const blink       = done => blinkOnce(()=>{ faceTimer=setTimeout(done,140); }, BLINK_STEP);
+const slowBlink   = done => blinkOnce(()=>{ faceTimer=setTimeout(done,200); }, 105);
+const doubleBlink = done => blinkOnce(()=>{
+  faceTimer=setTimeout(()=>blinkOnce(()=>{ faceTimer=setTimeout(done,140); }, BLINK_STEP),110);
+}, BLINK_STEP);
+
+// A micro-expression: hold a different face for a beat, sometimes while looking
+// somewhere, then settle back. Short and infrequent — it should read as a flicker
+// of personality, not a cartoon.
+function express(done){
+  const set=MOODS[mood].express;
+  eyesEl().textContent = set[Math.floor(Math.random()*set.length)];
+  if(Math.random()<0.35) setGaze(GAZE[Math.floor(Math.random()*GAZE.length)]);
+  faceTimer=setTimeout(()=>{
+    restEyes();                                   // clears both the face and the gaze
+    faceTimer=setTimeout(done,320);
+  }, 560+Math.random()*380);
+}
+// Look around: a short scan of 2-3 directions, each held a beat, then back to
+// centre. Never the same direction twice in a row, and the holds are uneven, so
+// it reads as looking about rather than a metronome.
+function glance(done){
+  const seq=[]; let last=null;
+  for(let i=0, n=2+Math.floor(Math.random()*2); i<n; i++){
+    let d; do{ d=GAZE[Math.floor(Math.random()*GAZE.length)]; }while(d===last);
+    seq.push(d); last=d;
+  }
+  (function step(i){
+    if(i>=seq.length){                              // settle back to centre
+      setGaze(null);
+      faceTimer=setTimeout(done,400);
+      return;
+    }
+    setGaze(seq[i]);                                // slides via the CSS transition
+    faceTimer=setTimeout(()=>step(i+1), 430+Math.random()*280);
+  })(0);
+}
+function queueAction(){
+  clearTimeout(faceTimer);
+  if(lessMotion.matches){ restEyes(); return; }     // decorative loop: honour the setting
+  faceTimer=setTimeout(()=>{
+    const r=Math.random();
+    const act = r<0.30 ? blink          // 47% blink family, in three flavours
+              : r<0.40 ? doubleBlink
+              : r<0.47 ? slowBlink
+              : r<0.80 ? glance         // 33% look around
+              :          express;       // 20% micro-expression
+    act(queueAction);
+  }, 1500+Math.random()*2200);
+}
+function setFace(next){
+  mood = MOODS[next] ? next : "off";
+  restEyes();
+  queueAction();
+}
+// Respect the setting if it changes while the page is open.
+lessMotion.addEventListener("change", ()=>{ clearTimeout(faceTimer); restEyes(); queueAction(); });
+setFace("off");
+
+// Every visible sign of connection state is driven from this one function, so
+// the LCD bar, the sidebar beacon, the Connect button and the Install buttons
+// can never end up disagreeing with each other.
+function setStatus(t,on,busy){
+  setFace(on ? "on" : "off");
+
+  const ds=document.getElementById("devstate");
+  ds.dataset.state = busy ? "busy" : (on ? "on" : "off");
+  document.getElementById("devstate-title").textContent=t;
+  document.getElementById("devstate-hint").textContent =
+    busy ? "Pick your device in the browser prompt." :
+    on   ? "Ready — press Install on any app." :
+           "Press Connect to install apps.";
+
+  document.getElementById("connect").textContent =
+    on ? "Connected" : (busy ? "Connecting…" : "Connect T‑Embed");
+  document.querySelectorAll("button[data-install]").forEach(b=>setInstallState(b,!!on));
+}
+
+/* ---------- connection result modal ---------- */
+const connDlg=()=>document.getElementById("conn-dlg");
+function showConnDialog(ok){
+  document.getElementById("conn-head").classList.toggle("err",!ok);
+  document.getElementById("conn-title").textContent = ok ? "Connected" : "Could Not Connect";
+  document.getElementById("conn-msg").textContent = ok
+    ? "Your T-Embed is ready. Press Install on any app and it lands in /ext/apps/ on the SD card."
+    : "The browser could not start a session with the device. Usually one of these:";
+  const steps=document.getElementById("conn-steps");
+  steps.hidden = ok;
+  if(!ok) steps.innerHTML = [
+    "The <b>qFlipper</b> bridge is off — on the device hold <b>Back</b>, then turn on <b>qFlipper</b>.",
+    "The wrong port was picked — try again and choose a different one.",
+    "The cable is charge-only — use a USB-C cable that carries data.",
+  ].map(s=>`<li>${s}</li>`).join("");
+  document.getElementById("conn-ok").textContent = ok ? "Browse Apps" : "Try Again";
+  connDlg().showModal();
+}
 
 /* ---------- Web Serial + Flipper RPC ---------- */
 let port=null, writer=null, reader=null, rxBuf=new Uint8Array(0), cmdId=1;
@@ -176,7 +574,7 @@ async function connect(){
     document.getElementById("connect").textContent="Connected";
     log("— check the RX lines above: a '>' prompt means CLI is here; garbage/echo of","o");
     log("  our command means RPC didn't switch. Paste this log back if install hangs.","o");
-  }catch(e){log("connect failed: "+e.message,"e");setStatus("Not connected",false);}
+  }catch(e){log("connect failed: "+e.message,"e");setStatus("Not Connected",false);}
 }
 
 async function rpcMkdir(path){
@@ -202,7 +600,7 @@ async function rpcWriteFile(path,bytes){
 }
 
 async function install(app){
-  if(!port){log("connect the T-Embed first.","e");return;}
+  if(!port){log("Connect your T-Embed first — press “Connect T-Embed” in the sidebar.","e");return;}
   try{
     // Flush leftover CLI text (prompt + start_rpc_session echo) so the RPC
     // response parser starts clean on the binary protobuf stream. Without this
@@ -224,31 +622,244 @@ async function install(app){
 
 /* ---------- catalog ---------- */
 function badge(fw){return fw==="modified"
-  ? '<span class="tag modified" title="needs our firmware">MODIFIED FW</span>'
-  : '<span class="tag stock" title="runs on stock port firmware too">STOCK OK</span>';}
+  ? '<span class="tag modified" title="needs this port&#39;s firmware">Modified FW</span>'
+  : '<span class="tag stock" title="runs on the original port firmware too">Stock OK</span>';}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+// Credit whoever wrote the original app. The URL arrives via catalog.json, so
+// treat it as untrusted input: allow http(s) only, never javascript: or data:.
+function credit(app){
+  const who=esc(app.author||"unknown");
+  let href=null;
+  try{
+    const u=new URL(app.url);
+    if(u.protocol==="http:"||u.protocol==="https:") href=u.href;
+  }catch(_){ /* absent or unparseable -> plain text, no link */ }
+  return href
+    ? `<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" `+
+      `aria-label="${who} — original app source, opens in a new tab">${who} &#8599;</a>`
+    : who;
+}
 async function loadCatalog(){
+  const grid=document.getElementById("grid");
   try{
     const cat=await (await fetch("catalog.json")).json();
-    const grid=document.getElementById("grid");
     grid.innerHTML="";
+    if(!cat.apps||!cat.apps.length){
+      grid.innerHTML='<div class="empty px">No apps in the catalog yet.</div>';
+      log("catalog loaded, but it is empty.");
+      return;
+    }
     cat.apps.forEach(app=>{
       const c=document.createElement("div"); c.className="card px";
-      c.innerHTML=`<h3>${app.name}</h3>
-        <div class="row"><span class="tag cat">${app.category}</span>${badge(app.fw)}</div>
-        <div class="desc">${app.description||""}</div>
-        <div class="meta">${(app.size/1024).toFixed(1)} KB · ${app.author||""}</div>`;
-      const b=document.createElement("button"); b.className="btn"; b.textContent="Install";
-      b.onclick=()=>install(app); c.appendChild(b); grid.appendChild(c);
+      c.innerHTML=`<h3>${esc(app.name)}</h3>
+        <div class="row"><span class="tag cat">${esc(app.category)}</span>${badge(app.fw)}</div>
+        <div class="desc">${esc(app.description)}</div>
+        <div class="meta">${(app.size/1024).toFixed(1)} KB · ${credit(app)}</div>`;
+      const b=document.createElement("button");
+      b.className="btn"; b.textContent="Install";
+      b.dataset.install=app.id;
+      setInstallState(b,!!port,app.name);     // nothing to install to until you connect
+      b.onclick=()=>install(app);             // install() already explains if not connected
+      c.appendChild(b); grid.appendChild(c);
     });
     log(`catalog loaded: ${cat.apps.length} apps.`);
-  }catch(e){log("catalog load failed: "+e.message,"e");}
+  }catch(e){
+    grid.innerHTML='<div class="empty px"><b>Could not load the catalog.</b><br>'+
+      'If you opened this file directly, serve it over http:// instead — '+
+      'browsers block fetch() on file:// pages.</div>';
+    log("catalog load failed: "+e.message,"e");
+  }
 }
 
-document.getElementById("connect").onclick=connect;
+document.getElementById("connect").onclick=async()=>{
+  if(port) return;                          // already connected — nothing to do
+  setStatus("Connecting…",false,true);
+  await connect();                          // connect() handles its own errors
+  showConnDialog(!!port);
+};
+document.getElementById("conn-close").onclick=()=>connDlg().close();
+document.getElementById("conn-ok").onclick=()=>{
+  connDlg().close();
+  if(port) document.getElementById("apps").scrollIntoView({block:"start"});
+  else document.getElementById("connect").focus();
+};
+
+// A status light that can go stale is worse than none: if the cable is pulled,
+// say so instead of leaving "Connected" sitting on screen.
+if("serial" in navigator){
+  navigator.serial.addEventListener("disconnect", ev=>{
+    if(!port || (ev.target && ev.target!==port)) return;
+    port=null; writer=null; reader=null; rxBuf=new Uint8Array(0);
+    setStatus("Not Connected",false);
+    log("device disconnected — reconnect to keep installing.","e");
+  });
+}
+
 if(!("serial" in navigator)){
-  log("Web Serial not supported — use Chrome or Edge (desktop).","e");
+  for(const id of ["connect","flash-open"]){
+    const b=document.getElementById(id); b.disabled=true; b.textContent="Needs Chrome Or Edge";
+  }
+  log("Web Serial not supported — open this page in Chrome or Edge on a desktop.","e");
 }
 loadCatalog();
+</script>
+
+<!-- Firmware flashing. Separate module script so the CDN import can't affect the
+     classic script above (the proven RPC path). esptool-js drives the chip's ROM
+     bootloader, which is a different device state than the RPC path — the two
+     never hold the same serial port at the same time. -->
+<script type="module">
+import { ESPLoader, Transport } from 'https://unpkg.com/esptool-js@0.5.4/bundle.js';
+
+const log = window.storeLog;
+const $ = id => document.getElementById(id);
+
+const BOARDS = {
+  't-embed': {
+    name: 'LilyGo T-Embed CC1101', chip: 'ESP32-S3', flashSize: '16MB',
+    // Single-app image: factory app at 0x10000 (partitions_singleapp_16mb.csv).
+    parts: [
+      { path: 'release/t-embed/latest/bootloader.bin',      offset: 0x0 },
+      { path: 'release/t-embed/latest/partition-table.bin', offset: 0x8000 },
+      { path: 'release/t-embed/latest/furi_esp32.bin',      offset: 0x10000 },
+    ],
+    // The S3's native USB CDC will not auto-reset into the ROM bootloader, so
+    // this has to be done by hand — the single biggest first-timer failure.
+    steps: [
+      'Power the board <b>off</b>.',
+      'Hold the <b>encoder button</b> in (it doubles as BOOT).',
+      'Power it <b>on</b> while still holding, then release.',
+      'The screen stays <b>dark</b> — that is correct, it means download mode.',
+    ],
+  },
+  'waveshare-c6': {
+    name: 'Waveshare ESP32-C6-LCD-1.9', chip: 'ESP32-C6', flashSize: '8MB',
+    parts: [
+      { path: 'release/waveshare_c6_1.9/latest/bootloader.bin',      offset: 0x0 },
+      { path: 'release/waveshare_c6_1.9/latest/partition-table.bin', offset: 0x8000 },
+      { path: 'release/waveshare_c6_1.9/latest/furi_esp32.bin',      offset: 0x10000 },
+    ],
+    steps: [
+      'Hold the <b>BOOT</b> button.',
+      'Tap <b>RESET</b> while still holding BOOT, then release.',
+    ],
+  },
+};
+
+const dlg = $('flash-dlg');
+let picked = null, busy = false;
+
+function setErr(msg){
+  const el = $('flash-err');
+  el.hidden = !msg;
+  if(msg) el.textContent = msg;
+}
+function setStat(msg){ $('flash-stat').textContent = msg; }
+
+function renderBoards(){
+  const wrap = $('boards');
+  wrap.innerHTML = '';
+  for(const [key,b] of Object.entries(BOARDS)){
+    const el = document.createElement('button');
+    el.type = 'button'; el.className = 'board';
+    el.setAttribute('aria-pressed', String(picked === key));
+    el.innerHTML = `<b>${b.name}</b><span>${b.chip} · ${b.flashSize} flash</span>`;
+    el.onclick = () => pick(key);
+    wrap.appendChild(el);
+  }
+}
+function pick(key){
+  picked = key;
+  renderBoards();
+  $('dl-list').innerHTML = BOARDS[key].steps.map(s => `<li>${s}</li>`).join('');
+  const go = $('flash-go');
+  go.setAttribute('aria-disabled','false');
+  go.textContent = 'Connect And Flash';
+  setErr(null); setStat('');
+}
+
+$('flash-open').onclick = () => { renderBoards(); dlg.showModal(); };
+$('flash-close').onclick = () => { if(!busy) dlg.close(); };
+// Don't let Esc yank the dialog away mid-write and leave a half-flashed board.
+dlg.addEventListener('cancel', e => { if(busy) e.preventDefault(); });
+
+$('flash-go').onclick = async () => {
+  if(busy) return;
+  if(!picked){ setErr('Pick a board first.'); return; }
+  const board = BOARDS[picked];
+  const bar = $('flash-bar');
+  let transport = null;
+
+  busy = true;
+  $('flash-go').setAttribute('aria-disabled','true');
+  $('flash-go').textContent = 'Flashing…';
+  setErr(null);
+
+  try{
+    setStat('Waiting for you to pick the serial port…');
+    const p = await navigator.serial.requestPort();
+    transport = new Transport(p, true);
+
+    const esploader = new ESPLoader({
+      transport, baudrate: 460800, romBaudrate: 115200,
+      terminal: { clean(){}, writeLine(d){ console.log(d); }, write(d){ console.log(d); } },
+    });
+
+    setStat('Connecting to the bootloader…');
+    log('flash: connecting to bootloader…','o');
+    await esploader.main();
+    await esploader.flashId();
+
+    const fileArray = [];
+    let total = 0;
+    for(const part of board.parts){
+      setStat(`Loading ${part.path.split('/').pop()}…`);
+      const resp = await fetch(part.path);
+      if(!resp.ok) throw new Error(`Could not load ${part.path} (${resp.status})`);
+      const bytes = new Uint8Array(await resp.arrayBuffer());
+      // esptool-js wants a binary string, not a typed array.
+      let s = ''; for(let i=0;i<bytes.length;i++) s += String.fromCharCode(bytes[i]);
+      fileArray.push({ data: s, address: part.offset });
+      total += bytes.length;
+    }
+
+    bar.hidden = false; bar.value = 0;
+    setStat(`Flashing ${(total/1024/1024).toFixed(1)} MB…`);
+
+    await esploader.writeFlash({
+      fileArray, flashSize: board.flashSize, flashMode: 'dio', flashFreq: '80m',
+      eraseAll: false, compress: true,
+      reportProgress: (idx, written, size) => {
+        const pct = Math.round((written / size) * 100);
+        bar.value = pct;
+        setStat(`Flashing part ${idx+1}/${board.parts.length} — ${pct}%`);
+      },
+    });
+
+    setStat('Resetting the device…');
+    await transport.setDTR(false);
+    await transport.setRTS(true);
+    await new Promise(r => setTimeout(r, 100));
+    await transport.setRTS(false);
+    await new Promise(r => setTimeout(r, 100));
+
+    bar.value = 100;
+    setStat('Done. Turn on qFlipper in the lock menu, then press Connect T-Embed.');
+    log('✓ firmware flashed. Next: lock menu → qFlipper → Connect T-Embed.','o');
+    $('flash-go').textContent = 'Flash Again';
+  }catch(e){
+    console.error(e);
+    setErr('Flash failed: ' + e.message + ' — check the board is in download mode, then try again.');
+    setStat('');
+    log('flash failed: ' + e.message,'e');
+    $('flash-go').textContent = 'Connect And Flash';
+  }finally{
+    // Always hand the port back, or the RPC path can't open it afterwards.
+    try{ await transport?.disconnect(); }catch(_){}
+    busy = false;
+    $('flash-go').setAttribute('aria-disabled','false');
+  }
+};
 </script>
 </body>
 </html>
