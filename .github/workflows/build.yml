@@ -193,6 +193,7 @@ jobs:
     if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-24.04
     permissions:
+      contents: read      # declaring any permission zeroes the rest — checkout needs this
       pages: write
       id-token: write
     environment:
@@ -202,6 +203,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+
+      # Creates the Pages site on the first run, using the job's pages: write
+      # token — so nobody has to find Settings -> Pages -> Source in the UI.
+      # Without this, deploy-pages fails on a repo that has never had Pages on.
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Download board artifacts
         uses: actions/download-artifact@v7
