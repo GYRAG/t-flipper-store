@@ -471,24 +471,42 @@ function setStatus(t,on,busy){
 /* ---------- connection result modal ---------- */
 const connDlg=()=>document.getElementById("conn-dlg");
 function showConnDialog(ok){
+  const boot = !ok && connectIssue==="bootloader";
   document.getElementById("conn-head").classList.toggle("err",!ok);
-  document.getElementById("conn-title").textContent = ok ? "Connected" : "Could Not Connect";
-  document.getElementById("conn-msg").textContent = ok
-    ? "Your T-Embed is ready. Press Install on any app and it lands in /ext/apps/ on the SD card."
-    : "The browser could not start a session with the device. Usually one of these:";
+  document.getElementById("conn-title").textContent =
+    ok ? "Connected" : boot ? "Board Is In Flashing Mode" : "Could Not Connect";
+  document.getElementById("conn-msg").textContent =
+    ok   ? "Your T-Embed is ready. Press Install on any app and it lands in /ext/apps/ on the SD card."
+  : boot ? "This board is sitting in download mode — the mode used to flash firmware. Apps can't be installed from there, because the firmware isn't running. To fix it:"
+         : "The browser could not start a session with the device. Usually one of these:";
   const steps=document.getElementById("conn-steps");
   steps.hidden = ok;
-  if(!ok) steps.innerHTML = [
+  if(!ok) steps.innerHTML = (boot ? [
+    "Power the board <b>off</b>.",
+    "Power it back <b>on</b> — this time <b>without</b> holding the encoder button.",
+    "Wait for the normal screen, then hold <b>Back</b> and turn on <b>qFlipper</b>.",
+    "Press <b>Connect T&#8209;Embed</b> again.",
+  ] : [
     "The <b>qFlipper</b> bridge is off — on the device hold <b>Back</b>, then turn on <b>qFlipper</b>.",
     "The wrong port was picked — try again and choose a different one.",
     "The cable is charge-only — use a USB-C cable that carries data.",
-  ].map(s=>`<li>${s}</li>`).join("");
+  ]).map(s=>`<li>${s}</li>`).join("");
   document.getElementById("conn-ok").textContent = ok ? "Browse Apps" : "Try Again";
   connDlg().showModal();
 }
 
 /* ---------- Web Serial + Flipper RPC ---------- */
 let port=null, writer=null, reader=null, rxBuf=new Uint8Array(0), cmdId=1;
+let connectIssue=null;          // "bootloader" | null — drives the failure dialog
+
+// Hand the port fully back, or a retry can't reopen it ("port already open").
+async function closePort(){
+  try{ await reader?.cancel(); }catch(_){}
+  try{ reader?.releaseLock();  }catch(_){}
+  try{ writer?.releaseLock();  }catch(_){}
+  try{ await port?.close();    }catch(_){}
+  port=null; writer=null; reader=null; rxBuf=new Uint8Array(0);
+}
 
 function u8concat(a,b){const c=new Uint8Array(a.length+b.length);c.set(a);c.set(b,a.length);return c;}
 function varint(n){const o=[];n=n>>>0;while(n>0x7f){o.push((n&0x7f)|0x80);n>>>=7;}o.push(n&0x7f);return Uint8Array.from(o);}
@@ -570,11 +588,31 @@ async function connect(){
     await writer.write(enc.encode("start_rpc_session\r"));
     await new Promise(r=>setTimeout(r,600));
 
+    // "ESP-ROM:esp32s3-..." is the ROM bootloader banner: the board came up in
+    // download mode (the state used for flashing) instead of booting the
+    // firmware. There is no CLI and no RPC there, so an install would stream
+    // the whole .fap into nothing and only fail on the read timeout. Catch it
+    // here and say so, rather than reporting a healthy connection.
+    const rx=new TextDecoder().decode(rxBuf);
+    if(/ESP-ROM:|waiting for download|DOWNLOAD\(/i.test(rx)){
+      connectIssue="bootloader";
+      log("this is the ROM bootloader, not the firmware — see the note above.","e");
+      await closePort();
+      setStatus("Not Connected",false);
+      return;
+    }
+
+    connectIssue=null;
     setStatus("Connected",true);
     document.getElementById("connect").textContent="Connected";
     log("— check the RX lines above: a '>' prompt means CLI is here; garbage/echo of","o");
     log("  our command means RPC didn't switch. Paste this log back if install hangs.","o");
-  }catch(e){log("connect failed: "+e.message,"e");setStatus("Not Connected",false);}
+  }catch(e){
+    connectIssue=null;
+    log("connect failed: "+e.message,"e");
+    await closePort();
+    setStatus("Not Connected",false);
+  }
 }
 
 async function rpcMkdir(path){
