@@ -121,11 +121,14 @@ Keep the **compat tag** on each. The build pipeline (§2.3) produces them all.
    Adding an app is one entry in `store/apps.json`.
 6. ~~**Fix tetris + fortune**~~ ✅ *probably* — both stopped reproducing once the
    GUI/timer deadlock was fixed (`642b8d1`). Neither was ever an app bug. See BUGS.md.
+5. ~~**On-device WiFi store**~~ ✅ **DONE, verified on hardware** (`8d86add`). WiFi
+   app → App Store → install straight to /ext/apps/ over HTTPS. No cable, no
+   computer. Reused wlan_sd_update.c's download machinery; catalog is the flat
+   catalog.txt CI publishes beside catalog.json.
 
 ### Next
 3. **On-device FAP manager** (3a: delete/organize) — firmware, small, high daily value.
 4. **Preinstalled-apps flash** (§4 + §3c) — makes a fresh device feel complete.
-5. **On-device WiFi store** (3b) — the cordless finale.
 7. **Upstream PR of the API audit** — collapses the stock/modified split, gives back.
 
 ### New, from what we learned debugging
