@@ -110,15 +110,43 @@ Keep the **compat tag** on each. The build pipeline (§2.3) produces them all.
 
 ---
 
-## 5. Roadmap (suggested order)
+## 5. Roadmap
 
-1. **Host the store on GitHub Pages** (+ unify with the flasher). Small, unlocks real use.
-2. **Catalog CI** — auto-build + auto-tag a growing app list.
+### Done (2026-08-23 → 08-27)
+1. ~~**Host the store on GitHub Pages**~~ ✅ **LIVE**: https://gyrag.github.io/t-flipper-store/
+   Flasher and store are now **one page** — firmware flashing is built into the store
+   itself via esptool-js, so `interface.html` survives only as `flasher-legacy.html`.
+2. ~~**Catalog CI**~~ ✅ CI builds the curated FAPs, generates `catalog.json`, and
+   auto-tags `stock`/`modified` from the undefined-symbol diff against upstream.
+   Adding an app is one entry in `store/apps.json`.
+6. ~~**Fix tetris + fortune**~~ ✅ *probably* — both stopped reproducing once the
+   GUI/timer deadlock was fixed (`642b8d1`). Neither was ever an app bug. See BUGS.md.
+
+### Next
 3. **On-device FAP manager** (3a: delete/organize) — firmware, small, high daily value.
 4. **Preinstalled-apps flash** (§4 + §3c) — makes a fresh device feel complete.
 5. **On-device WiFi store** (3b) — the cordless finale.
-6. **Fix tetris + fortune** (enable coredump, decode — see BUGS.md) — do alongside whenever.
 7. **Upstream PR of the API audit** — collapses the stock/modified split, gives back.
+
+### New, from what we learned debugging
+8. **Grow the catalog past 4 apps.** The pipeline is done; the only cost left is
+   *verifying each app runs*. 30 dirs sit in `applications_user/` — and with the
+   deadlock fixed, several that "crashed" may simply work now. Re-test before
+   assuming any of them is broken.
+9. **Fix the TagTinker BLE stall.** Leaving a TagTinker scene calls
+   `bt_profile_restore_default()`, and `ble_serial_alloc()` waits up to **5 s** for
+   the BLE GATT service to start — synchronously, inside input handling. All input
+   is dead for those 5 s. It recovers, so it's not a deadlock, but a 5-second frozen
+   UI is a real bug. Restarting BLE off the input path is the fix.
+10. **Decide the fate of the deadlock detector.** `gui.c` crashes deliberately if the
+    input queue stalls for 30 s. It costs nothing normally and turns any future
+    deadlock into a dump that names the cycle — but it *does* convert a hang into a
+    reboot. Keep it unless it misfires.
+11. **Audit for the same lock-order bug elsewhere.** The rule broken twice:
+    *never block inside a FreeRTOS timer callback, and never hold a lock across a
+    `furi_timer_*` call.* `Tmr Svc` is the only task draining the timer command
+    queue, so anything blocking it stalls every timer in the firmware. Worth grepping
+    other timer callbacks for lock acquisition.
 
 ---
 

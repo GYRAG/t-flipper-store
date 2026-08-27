@@ -15,11 +15,20 @@ Owner's GitHub backup of this work: **private repo `github.com/GYRAG/t-flipper`*
 - **Apps ported** (`applications_user/`): **resistors**, **net_calculator** (IPv4/VLSM subnet
   calculator), **wikiflip** (offline cybersecurity dictionary), **fortune_spinner**, **tetris**.
 - **New app built here**: **coloranim** — full-color 320×170 animation player.
-- **App store** (`store/`): Flipper-themed website that installs FAPs to the device over
-  **USB / Web-Serial → Flipper RPC**, one click, no toolchain. Proven working.
+- **App store — LIVE at https://gyrag.github.io/t-flipper-store/** (source repo:
+  public `github.com/GYRAG/t-flipper-store`, remote `store`). One page that both
+  **flashes firmware** (esptool-js) and **installs FAPs** over USB/Web-Serial →
+  Flipper RPC. CI builds the FAPs, generates `catalog.json`, and publishes. See §8.
 - **New tool**: `tools/compile_animation.py` — GIF/PNG → animation pack (mono or color).
+- **New tool**: `tools/make_catalog.py` — builds `store/catalog.json` from
+  `store/apps.json` + the built FAPs, auto-tagging each `stock`/`modified`.
 - **Firmware improvements**: 432-symbol FAP API export audit; WiFi RAM fix (upstream merge);
   encoder keypad fix (`number_input`); app-browser speedup (thread pin + FAP icon cache).
+- **Coredump-to-flash is ON** (`sdkconfig.defaults.esp32s3`) — crashes are now
+  diagnosable. This is what cracked the deadlock below; see BUGS.md for the exact
+  decode commands.
+- **GUI/timer deadlock FIXED** (`642b8d1`) — fast dial rotation used to freeze the
+  device. Very likely the real cause of the old tetris and fortune "crashes" too.
 
 Details and file paths for each are in §3.
 
@@ -29,7 +38,9 @@ Details and file paths for each are in §3.
   "have we diverged from upstream?" answer (short version: no — additive superset).
 - **APPSTORE_PLAN.md** — store architecture + the exact RPC-over-USB protocol facts
   (DTR, `start_rpc_session`, one command_id per file, reply-only-on-final-chunk).
-- **BUGS.md** — open crashes (tetris, fortune) and why they need a coredump to diagnose.
+- **BUGS.md** — the GUI/timer deadlock (root-caused from a coredump), why tetris and
+  fortune were never app bugs, and the exact `esp-coredump` invocation that works
+  on this machine. **Read this before debugging any freeze or crash.**
 
 ---
 
@@ -199,3 +210,71 @@ big-endian packs played by the `coloranim` FAP. All display symbols needed
 | CLI flash "No serial data received" | Use the local web flasher + manual download mode (§2) |
 | `python3` does nothing on Windows | MS-Store stub → use `$PYTHON` / the IDF python |
 | number_input dial only hits 0/5 | Fixed; `text_input`/`byte_input` still need it |
+| Device freezes, only reset works, **no reboot** | That's a **deadlock, not a crash** — no panic means no coredump will ever appear. Look for a lock cycle, don't read app source. BUGS.md §3 |
+| `No module named esp_coredump` | Bare `python` isn't ESP-IDF's → use `C:/Espressif/python_env/idf5.4_py3.11_env/Scripts/esp-coredump.exe` |
+| esp-coredump: "Please set up ESP-IDF" | Needs `IDF_PATH` **and** the xtensa gdb on PATH. In git-bash use POSIX paths (`/c/...`) — a `C:/...` entry breaks PATH, since `:` is the separator |
+| `Core dump version "0xffff"` | Partition is erased — no crash captured since the last flash. Not a tooling failure |
+| Coredump decodes to nonsense symbols | The ELF must be the exact one flashed; `winbuild.py build` wipes `build_t_embed/`. Decode before rebuilding |
+| Timer callback hangs the whole device | `Tmr Svc` is the only task draining the FreeRTOS timer queue — never block in a timer callback, and never take a lock held across one |
+
+---
+
+## 8. The app store (live) — how it actually works
+
+**Site:** https://gyrag.github.io/t-flipper-store/ · **Repo:** public
+`github.com/GYRAG/t-flipper-store`, pushed to from here as the `store` remote:
+
+```bash
+git push store <branch>:main
+```
+
+`origin` is upstream (Sor3nt) — **never push there**. `mine` is the private backup.
+
+### Adding an app to the store
+One entry in **`store/apps.json`** (`id`, `dir`, `category`, `description`,
+`author`, optional `url` crediting the original author). That's the whole change —
+CI builds it and regenerates the catalog. `store/catalog.json` is **generated**;
+don't hand-edit it (it's gitignored).
+
+The bar for adding one is that it *runs*, not that it builds. CI proves the build;
+only a human proves the app works on the device.
+
+### How the `stock` / `modified` tag is derived
+Not hand-maintained. `buildFap.sh` already dumps each FAP's undefined symbols, so
+CI runs `tools/check_fap_symbols.py` against **upstream's** `firmware_api.c`
+(937 symbols vs our 1372) and uses the exit code: resolves → `stock`, doesn't →
+`modified`. It cannot drift from reality.
+
+### CI (`.github/workflows/build.yml`)
+Builds three boards; the t_embed leg additionally builds the curated FAPs and
+regenerates the catalog. A `deploy-pages` job assembles flasher + store + firmware
+into one site and publishes it. `actions/configure-pages` with `enablement: true`
+turns Pages on by itself — without it the deploy fails on a repo that has never
+had Pages enabled, and the Settings toggle is easy to miss.
+
+Note `permissions:` zeroes every scope you don't list — the deploy job needs
+`contents: read` for checkout as well as `pages: write` and `id-token: write`.
+
+### Local preview
+CI assembles the site; to see it locally, mirror that layout (store page as
+`index.html`, `catalog.json` and `faps/` beside it, bins under
+`release/t-embed/latest/`) and serve it over http — `fetch()` is blocked on
+`file://`.
+
+## 9. Debugging a freeze or crash (the workflow that works)
+
+1. **Does it reboot, or just freeze?** Reboot → panic → there's a coredump.
+   Freeze with only the reset button working → **deadlock**, and no dump will ever
+   appear. The task watchdog won't catch it either: it only checks the *idle* task,
+   which keeps running while everything else is politely blocked.
+2. **Erase the partition before testing**, or you'll decode a stale dump and reach
+   the wrong conclusion (this happened):
+   `python -m esptool --chip esp32s3 --port COM15 erase_region 0xa10000 0x20000`
+3. Reproduce, then decode — full commands in **BUGS.md**. No download mode needed;
+   esptool auto-resets over the native USB CDC.
+4. For a deadlock, `thread apply all bt` plus the task-name table is what names the
+   cycle. Match each blocked task to what it holds and what it waits on.
+
+**Hard-won:** a reproducible "crash" that leaves no coredump is not a crash. Check
+for a deadlock *before* reading app source — two of these were chased through
+app code for weeks and neither bug was in an app.
