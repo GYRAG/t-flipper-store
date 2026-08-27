@@ -96,6 +96,11 @@ void gui_input_events_callback(const void* value, void* ctx);
  */
 size_t gui_active_view_port_count(Gui* gui, GuiLayer layer);
 
+/** Non-blocking gui_active_view_port_count(). Returns false (and leaves *count
+ *  untouched) if the GUI mutex is held right now. Use from any context that
+ *  must not block — above all FreeRTOS timer callbacks. See BUGS.md #3. */
+bool gui_active_view_port_count_try(Gui* gui, GuiLayer layer, size_t* count);
+
 /** Lock GUI
  *
  * @param      gui   The Gui instance

@@ -464,6 +464,19 @@ void menu_reset(Menu* menu) {
 static void menu_set_position(Menu* menu, uint32_t position) {
     furi_check(menu);
 
+    /* icon_animation_stop/start issue FreeRTOS timer commands, and those block
+     * once the timer command queue is full — 10 entries, and a fast scroll emits
+     * two per detent. Doing that while holding the view model lock is one leg of
+     * the deadlock in BUGS.md #3: GuiSrv needs this same model to redraw and so
+     * keeps the GUI mutex, while Tmr Svc — the only task that drains the timer
+     * queue — is stuck waiting on that GUI mutex.
+     *
+     * So decide under the lock, animate outside it. Safe because the menu's
+     * input handling and menu_reset() both run on the thread that owns this
+     * view, so the items cannot be freed in between. */
+    IconAnimation* to_stop = NULL;
+    IconAnimation* to_start = NULL;
+
     with_view_model(
         menu->view,
         MenuModel* model,
@@ -471,16 +484,16 @@ static void menu_set_position(Menu* menu, uint32_t position) {
             if(position < MenuItemArray_size(model->items) && position != model->position) {
                 model->scroll_counter = 0;
 
-                MenuItem* item = MenuItemArray_get(model->items, model->position);
-                icon_animation_stop(item->icon);
-
-                item = MenuItemArray_get(model->items, position);
-                icon_animation_start(item->icon);
+                to_stop = MenuItemArray_get(model->items, model->position)->icon;
+                to_start = MenuItemArray_get(model->items, position)->icon;
 
                 model->position = position;
             }
         },
         true);
+
+    if(to_stop) icon_animation_stop(to_stop);
+    if(to_start) icon_animation_start(to_start);
 }
 
 void menu_set_selected_item(Menu* menu, uint32_t index) {

@@ -359,7 +359,16 @@ static void desktop_clock_timer_callback(void* context) {
     furi_assert(context);
     Desktop* desktop = context;
 
-    const bool clock_enabled = gui_active_view_port_count(desktop->gui, GuiLayerStatusBarLeft) < 6;
+    /* Runs on Tmr Svc, the only task that drains the FreeRTOS timer command
+     * queue. Blocking here stalls every furi_timer_start/stop in the system,
+     * which is exactly one leg of the deadlock in BUGS.md #3 — this used to
+     * call gui_active_view_port_count(), which takes the GUI mutex and waits
+     * forever. Skip the tick instead if the GUI is busy: this is a 1 Hz cosmetic
+     * clock update, and the next tick is a second away. */
+    size_t left_count;
+    if(!gui_active_view_port_count_try(desktop->gui, GuiLayerStatusBarLeft, &left_count)) return;
+
+    const bool clock_enabled = left_count < 6;
 
     if(clock_enabled) {
         desktop_clock_update(desktop);

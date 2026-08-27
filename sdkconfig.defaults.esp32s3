@@ -100,3 +100,20 @@ CONFIG_LWIP_L2_TO_L3_COPY=y
 # writes (would make PSRAM task stacks safe). Needs verified flash-chip support;
 # our chip is mfr 0x46 (no-name) so this is a test.
 CONFIG_SPI_FLASH_AUTO_SUSPEND=y
+
+# Core dump to flash. The coredump partition already exists (0xa10000, 128 KB in
+# partitions_singleapp_16mb.csv) but the build defaulted to ENABLE_TO_NONE, so
+# nothing was ever written to it. Panic backtraces go to the UART0 pins, not the
+# TinyUSB CDC the firmware exposes over USB, so a crash on this board leaves no
+# visible trace at all — which is why the tetris, fortune and encoder crashes in
+# BUGS.md are all still guesswork.
+#
+# With this on, a panic writes a full register + stack dump to that partition,
+# and espcoredump.py reads it back over USB and decodes it against the ELF.
+# ELF format (not the legacy binary one) is what espcoredump.py's info_corefile
+# expects; CRC32 lets it reject a partially written dump instead of decoding
+# garbage. 32 tasks keeps the dump inside the 128 KB partition.
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+CONFIG_ESP_COREDUMP_CHECKSUM_CRC32=y
+CONFIG_ESP_COREDUMP_MAX_TASKS_NUM=32

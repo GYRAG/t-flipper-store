@@ -3,6 +3,32 @@
 
 #define TAG "GuiSrv"
 
+/* DIAGNOSTIC (BUGS.md #3 — hang after leaving the Apps browser, on rotation).
+ *
+ * gui_input_events_callback runs inside furi_pubsub_publish, which holds
+ * pubsub->mutex across every subscriber callback. Waiting forever there on a
+ * full input queue wedges the input service *while it holds that mutex*, so
+ * every other thread that touches the input pubsub (subscribe/unsubscribe on
+ * app start and exit) piles up behind it.
+ *
+ * Nothing catches that: the task is politely blocked rather than spinning, so
+ * the idle-task watchdog never fires. The device simply stops responding to
+ * input, with no panic and therefore no coredump — which is exactly what we
+ * observed, and why this bug was undiagnosable.
+ *
+ * Bound the wait so the deadlock becomes a deliberate crash instead of a silent
+ * freeze. The coredump then names the blocked tasks and whatever is holding the
+ * GUI thread up.
+ *
+ * The threshold must sit above the longest LEGITIMATE stall, not merely above a
+ * redraw. 2000 ms was too low and produced a false positive: leaving a TagTinker
+ * scene calls bt_profile_restore_default(), and ble_serial_alloc() waits up to
+ * 5000 ms for the BLE GATT service to start (ble_serial.c). That runs inside the
+ * app's input handling, so it legitimately stalls input delivery for ~5 s.
+ * 30 s leaves a wide margin over that while still catching a real deadlock,
+ * which by definition never clears. */
+#define GUI_INPUT_QUEUE_TIMEOUT_MS 30000U
+
 ViewPort* gui_view_port_find_enabled(ViewPortArray_t array) {
     // Iterating backward
     ViewPortArray_it_t it;
@@ -15,6 +41,35 @@ ViewPort* gui_view_port_find_enabled(ViewPortArray_t array) {
         ViewPortArray_previous(it);
     }
     return NULL;
+}
+
+/* Non-blocking variant of gui_active_view_port_count(), for callers that must
+ * never block — specifically FreeRTOS timer callbacks. Tmr Svc is the only task
+ * that drains the timer command queue, so if it blocks on the GUI mutex then
+ * *every* furi_timer_start/stop in the system stalls behind it. That is one leg
+ * of the deadlock in BUGS.md #3. Returns false if the GUI is busy right now; a
+ * caller on a periodic tick should simply skip and try again next time. */
+bool gui_active_view_port_count_try(Gui* gui, GuiLayer layer, size_t* count) {
+    furi_assert(gui);
+    furi_check(layer < GuiLayerMAX);
+    furi_assert(count);
+
+    if(furi_mutex_acquire(gui->mutex, 0) != FuriStatusOk) return false;
+
+    size_t ret = 0;
+    ViewPortArray_it_t it;
+    ViewPortArray_it_last(it, gui->layers[layer]);
+    while(!ViewPortArray_end_p(it)) {
+        ViewPort* view_port = *ViewPortArray_ref(it);
+        if(view_port_is_enabled(view_port)) {
+            ret++;
+        }
+        ViewPortArray_previous(it);
+    }
+    gui_unlock(gui);
+
+    *count = ret;
+    return true;
 }
 
 size_t gui_active_view_port_count(Gui* gui, GuiLayer layer) {
@@ -48,7 +103,12 @@ void gui_input_events_callback(const void* value, void* ctx) {
 
     Gui* gui = ctx;
 
-    furi_message_queue_put(gui->input_queue, value, FuriWaitForever);
+    /* Bounded, not FuriWaitForever — see GUI_INPUT_QUEUE_TIMEOUT_MS above. */
+    if(furi_message_queue_put(
+           gui->input_queue, value, furi_ms_to_ticks(GUI_INPUT_QUEUE_TIMEOUT_MS)) !=
+       FuriStatusOk) {
+        furi_crash("GUI input queue stuck");
+    }
     furi_thread_flags_set(gui->thread_id, GUI_THREAD_FLAG_INPUT);
 }
 
