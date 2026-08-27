@@ -232,8 +232,15 @@ static void tetris_game_apply_kick(Point points[], Point kick) {
 
 static bool tetris_game_is_valid_pos(TetrisState* tetris_state, Point* shape) {
     for(int i = 0; i < 4; i++) {
-        if(shape[i].x < 0 || shape[i].x > (FIELD_WIDTH - 1) ||
-           tetris_state->playField[shape[i].y][shape[i].x] == true) {
+        // Reject the side walls and the floor. Rotation kicks can push a cell's y
+        // out of range; without this guard the playField read below went out of
+        // bounds (negative y above the top, or y past the floor) and crashed.
+        if(shape[i].x < 0 || shape[i].x > (FIELD_WIDTH - 1) || shape[i].y > (FIELD_HEIGHT - 1)) {
+            return false;
+        }
+        // Cells above the top (y < 0) are open air, not a collision — and must not
+        // index playField. Only check the field for rows that actually exist.
+        if(shape[i].y >= 0 && tetris_state->playField[shape[i].y][shape[i].x] == true) {
             return false;
         }
     }
