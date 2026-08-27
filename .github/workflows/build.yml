@@ -166,7 +166,7 @@ jobs:
         if: matrix.board.script_key == 't_embed'
         run: |
           mkdir -p artifact_staging/store/faps
-          cp store/index.html store/catalog.json artifact_staging/store/
+          cp store/index.html store/catalog.json store/catalog.txt artifact_staging/store/
           for id in $(jq -r '.apps[].id' store/apps.json); do
             cp "build_t_embed/fap/$id.fap" artifact_staging/store/faps/
           done
@@ -230,6 +230,8 @@ jobs:
           # It lives at the root so catalog.json, faps/ and release/ are siblings.
           cp "$T/store/index.html"   "$SITE/index.html"
           cp "$T/store/catalog.json" "$SITE/catalog.json"
+          # Flat catalog the on-device WiFi store fetches (no JSON parser in firmware).
+          cp "$T/store/catalog.txt"  "$SITE/catalog.txt"
           cp -r "$T/store/faps"      "$SITE/faps"
           cp favicon.ico             "$SITE/favicon.ico"
 
