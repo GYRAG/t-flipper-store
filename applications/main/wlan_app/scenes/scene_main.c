@@ -14,6 +14,7 @@ enum MainIndex {
     MainIndexChannelEvilPortal = 15,
     MainIndexUpdateSd = 16,
     MainIndexWebFs = 17,
+    MainIndexAppStore = 18,
 };
 
 static void wlan_app_scene_main_submenu_cb(void* context, uint32_t index) {
@@ -78,6 +79,9 @@ void wlan_app_scene_main_on_enter(void* context) {
         wlan_app_scene_main_submenu_cb, app);
     submenu_add_item(
         app->submenu, "Web-Filesystem", MainIndexWebFs,
+        wlan_app_scene_main_submenu_cb, app);
+    submenu_add_item(
+        app->submenu, "App Store", MainIndexAppStore,
         wlan_app_scene_main_submenu_cb, app);
 
     view_dispatcher_switch_to_view(app->view_dispatcher, WlanAppViewSubmenu);
@@ -169,6 +173,18 @@ bool wlan_app_scene_main_on_event(void* context, SceneManagerEvent event) {
                 scene_manager_next_scene(app->scene_manager, WlanAppSceneWebFsInfo);
             } else {
                 scene_manager_next_scene(app->scene_manager, WlanAppSceneWebFsMenu);
+            }
+            consumed = true;
+            break;
+        case MainIndexAppStore:
+            // The store needs a live connection to fetch the catalog. Same
+            // connect-then-route pattern as Update SD: set the flow flag and,
+            // if not yet connected, go through the shared Connect scene first.
+            app->app_store_flow = true;
+            if(app->connected) {
+                scene_manager_next_scene(app->scene_manager, WlanAppSceneAppStore);
+            } else {
+                scene_manager_next_scene(app->scene_manager, WlanAppSceneConnect);
             }
             consumed = true;
             break;

@@ -17,6 +17,7 @@
 #include "wlan_mitm_payloads.h"
 #include "wlan_evil_portal_templates.h"
 #include "wlan_sd_update.h"
+#include "wlan_app_store.h"
 #include "wlan_webfs.h"
 #include "views/wlan_lan_view.h"
 #include "views/wlan_connect_view.h"
@@ -250,6 +251,11 @@ struct WlanApp {
     bool update_sd_flow;
     WlanSdUpdate* sd_update;
     View* view_sd_update;
+
+    // On-device WiFi app store (catalog fetch + .fap install). Reuses the
+    // shared submenu/widget/popup views; no dedicated view of its own.
+    WlanAppStore* app_store;
+    bool app_store_flow; // route to the store scene after a successful connect
 
     // Web-Filesystem: like update_sd_flow, but routes to the Web-FS info scene
     // after a successful connect. webfs_ssid/pw hold the Dedicated-AP config.

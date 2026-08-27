@@ -132,6 +132,9 @@ bool wlan_app_scene_ssid_connect_on_event(void* context, SceneManagerEvent event
                 // Update-SD-Flow braucht keinen ARP-Scan → direkt zur
                 // Bestätigung/Download-Scene.
                 scene_manager_next_scene(app->scene_manager, WlanAppSceneUpdateSd);
+            } else if(app->app_store_flow) {
+                // App-store flow: no ARP scan needed, go straight to the store.
+                scene_manager_next_scene(app->scene_manager, WlanAppSceneAppStore);
             } else {
                 // gw_mac aus DHCP-Antwort sollte jetzt in der ARP-Tabelle stehen.
                 wlan_netcut_preflight(app->netcut);

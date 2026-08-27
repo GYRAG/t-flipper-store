@@ -61,6 +61,13 @@ typedef enum {
     WlanAppCustomEventUpdateSdCancel = 201,
     WlanAppCustomEventUpdateSdFinished = 202,
 
+    WlanAppCustomEventAppStoreFinished = 205,
+    WlanAppCustomEventAppStoreBack = 206,
+    /* Base for "install entry N": the entry index is ADDED to this, so it must
+     * be the LAST id in this enum with clear space above it — nothing may follow
+     * within STORE_MAX_APPS (64) of it, or a high index would collide. */
+    WlanAppCustomEventAppStoreInstall = 300,
+
     WlanAppCustomEventSmartDeauthToggle = 210,
 
     WlanAppCustomEventAirSnitchProbeDone = 220,

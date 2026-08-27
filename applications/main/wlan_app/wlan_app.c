@@ -138,6 +138,8 @@ static WlanApp* wlan_app_alloc(void) {
 
     app->update_sd_flow = false;
     app->sd_update = wlan_sd_update_alloc();
+    app->app_store_flow = false;
+    app->app_store = wlan_app_store_alloc();
 
     app->text_buf = furi_string_alloc();
     app->netcut = wlan_netcut_alloc();
@@ -178,6 +180,10 @@ static void wlan_app_free(WlanApp* app) {
     if(app->sd_update) {
         wlan_sd_update_free(app->sd_update);
         app->sd_update = NULL;
+    }
+    if(app->app_store) {
+        wlan_app_store_free(app->app_store);
+        app->app_store = NULL;
     }
     wlan_hal_stop();
 
