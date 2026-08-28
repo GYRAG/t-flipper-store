@@ -32,6 +32,78 @@
       "category": "Media",
       "author": "GYRAG",
       "description": "Play full-color 320x170 animations from SD."
+    },
+    {
+      "id": "asteroids",
+      "dir": "asteroids",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Classic asteroids shooter."
+    },
+    {
+      "id": "blackjack",
+      "dir": "blackjack",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Blackjack against the dealer."
+    },
+    {
+      "id": "blackjack_split",
+      "dir": "blackjack_split",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Blackjack with split hands."
+    },
+    {
+      "id": "dice_app",
+      "dir": "dice",
+      "category": "Games",
+      "author": "@Ka3u6y6a · Sor3nt port",
+      "description": "Dice roller — coin, d4/d6/d8/d10/d20 and more.",
+      "url": "https://github.com/Ka3u6y6a/flipper-zero-dice"
+    },
+    {
+      "id": "game15",
+      "dir": "game15",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "The classic 15-tile sliding puzzle."
+    },
+    {
+      "id": "flipper_pong",
+      "dir": "pong",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Two-paddle Pong."
+    },
+    {
+      "id": "roulette",
+      "dir": "roulette",
+      "category": "Games",
+      "author": "Superagent · Sor3nt port",
+      "description": "Spin an American roulette wheel."
+    },
+    {
+      "id": "snake20",
+      "dir": "snake20",
+      "category": "Games",
+      "author": "@Willzvul · Sor3nt port",
+      "description": "Snake 2.0 — remake with new modes.",
+      "url": "https://github.com/Willzvul/Snake_2.0"
+    },
+    {
+      "id": "t_embed_snake",
+      "dir": "t_embed_snake",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Classic snake."
+    },
+    {
+      "id": "texas_holdem",
+      "dir": "texas_holdem",
+      "category": "Games",
+      "author": "Sor3nt port",
+      "description": "Texas Hold'em poker."
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
