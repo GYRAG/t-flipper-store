@@ -155,6 +155,20 @@
       "category": "Tools",
       "author": "SkorP · Sor3nt port",
       "description": "Detect NFC/RFID reader fields and type."
+    },
+    {
+      "id": "mifare_fuzzer",
+      "dir": "mifare_fuzzer",
+      "category": "NFC",
+      "author": "@spheeere98 · Sor3nt port",
+      "description": "Emulate/fuzz Mifare Classic UIDs."
+    },
+    {
+      "id": "nfc_magic",
+      "dir": "nfc_magic",
+      "category": "NFC",
+      "author": "Sor3nt port",
+      "description": "Write UIDs to magic (gen1/gen2) NFC tags."
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
