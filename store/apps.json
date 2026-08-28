@@ -6,7 +6,7 @@
       "id": "resistors",
       "dir": "resistors",
       "category": "Tools",
-      "author": "Lewis Westbury / port",
+      "author": "Lewis Westbury · ported by GYRAG",
       "description": "Resistor color-code / VLSM calculator. OK cycles bands.",
       "url": "https://github.com/instantiator/flipper-zero-experimental-apps/tree/main/resistors"
     },
@@ -14,22 +14,23 @@
       "id": "net_calculator",
       "dir": "net_calculator",
       "category": "Tools",
-      "author": "WolfRor / port",
+      "author": "WolfRor · ported by GYRAG",
       "description": "Offline IPv4 VLSM subnet calculator.",
-      "url": "https://www.wolfror.com/products/netcalculator-for-flipper-zero"
+      "url": "https://github.com/WolfRorDev/Net-Calculator-for-Flipper-Zero/tree/main"
     },
     {
       "id": "wikiflip",
       "dir": "wikiflip",
       "category": "Tools",
-      "author": "Roger Arana / port",
-      "description": "Offline cybersecurity dictionary."
+      "author": "Roger Arana · ported by GYRAG",
+      "description": "Offline cybersecurity dictionary.",
+      "url": "https://github.com/RogerF5-Security/WikiFlip"
     },
     {
       "id": "coloranim",
       "dir": "coloranim",
       "category": "Media",
-      "author": "port",
+      "author": "GYRAG",
       "description": "Play full-color 320x170 animations from SD."
     }
   ],
