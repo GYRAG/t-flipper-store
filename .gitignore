@@ -43,3 +43,8 @@ store/faps/
 store/catalog.json
 # flat form of the same catalog, for the on-device WiFi store
 store/catalog.txt
+
+# internal working notes — keep local, don't publish
+BUGS.md
+FUTURE_PLANS.md
+HANDOFF.md
