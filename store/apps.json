@@ -104,6 +104,57 @@
       "category": "Games",
       "author": "Sor3nt port",
       "description": "Texas Hold'em poker."
+    },
+    {
+      "id": "flipper_xremote",
+      "dir": "flipper_xremote",
+      "category": "Infrared",
+      "author": "@kala13x · Sor3nt port",
+      "description": "Advanced infrared remote with learning.",
+      "url": "https://github.com/kala13x/flipper-xremote"
+    },
+    {
+      "id": "tagtinker",
+      "dir": "TagTinker-main",
+      "category": "Infrared",
+      "author": "i12bp8 · Sor3nt port",
+      "description": "IR label/tag study tool with phone sync.",
+      "url": "https://github.com/i12bp8/TagTinker"
+    },
+    {
+      "id": "reverse_shell",
+      "dir": "reverse_shell",
+      "category": "Tools",
+      "author": "cardputer · Sor3nt port",
+      "description": "WiFi reverse shell over TCP."
+    },
+    {
+      "id": "proto_pirate",
+      "dir": "protopirate",
+      "category": "Sub-GHz",
+      "author": "Sor3nt port",
+      "description": "Decode Sub-GHz car key-fob signals."
+    },
+    {
+      "id": "weather_station",
+      "dir": "weather_station",
+      "category": "Sub-GHz",
+      "author": "Sor3nt port",
+      "description": "Receive Sub-GHz weather sensor data."
+    },
+    {
+      "id": "wmbuster",
+      "dir": "wmbuster",
+      "category": "Sub-GHz",
+      "author": "wm-buster · Sor3nt port",
+      "description": "EU wM-Bus meter listener (T1/C1/S1, AES)."
+    },
+    {
+      "id": "nfc_rfid_detector",
+      "dir": "nfc_rfid_detector",
+      "category": "Tools",
+      "author": "SkorP · Sor3nt port",
+      "description": "Detect NFC/RFID reader fields and type."
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
