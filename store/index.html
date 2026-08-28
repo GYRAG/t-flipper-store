@@ -6,212 +6,7 @@
 <meta name="theme-color" content="#ff8200">
 <link rel="preconnect" href="https://unpkg.com">
 <title>T-Embed App Store</title>
-<style>
-  :root{
-    color-scheme: light;
-    /* The device, literally: orange body plastic, black bezel, backlit LCD. */
-    --orange:#ff8200;
-    --orange-lit:#ff9426;   /* the LCD with the backlight on */
-    --ink:#000;
-    --case:#f5f1e6;         /* the ivory plastic of the white edition */
-    --case-dim:#e2dcca;
-    --bezel:#141414;
-    --ok:#8fd694;
-    --sp:16px;
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  @media (prefers-reduced-motion: reduce){
-    html{scroll-behavior:auto}
-    *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;
-      transition-duration:.01ms !important}
-  }
-  body{
-    margin:0;
-    background:var(--orange);
-    /* Faint pixel grid — the halftone in Flipper's own branding. */
-    background-image:
-      repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 1px, transparent 1px 8px),
-      repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 8px);
-    color:var(--ink);
-    font-family:ui-monospace,"Cascadia Mono","Courier New",Menlo,Consolas,monospace;
-    image-rendering:pixelated;-webkit-font-smoothing:none;
-    -webkit-tap-highlight-color:rgba(0,0,0,.2);
-    touch-action:manipulation;
-  }
-  a{color:var(--ink)}
-  .wrap{max-width:1180px;margin:0 auto;padding:var(--sp) var(--sp) 48px}
-
-  .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--orange);
-    padding:12px 16px;min-height:44px;display:flex;align-items:center;
-    font-weight:900;z-index:30}
-  .skip:focus{left:8px;top:8px}
-
-  /* ---- the pixel-art panel idiom: hard border, hard shadow, no radius ---- */
-  .px{border:4px solid var(--ink);box-shadow:6px 6px 0 rgba(0,0,0,.45);background:var(--case)}
-
-  /* ---- THE DEVICE: black bezel wrapping a backlit LCD ---- */
-  .device{background:var(--bezel);border:4px solid var(--ink);border-radius:12px;
-    padding:14px;box-shadow:8px 8px 0 rgba(0,0,0,.45)}
-  .lcd{position:relative;background:var(--orange-lit);color:var(--ink);
-    padding:14px 16px;border-radius:3px;overflow:hidden}
-  .lcd::after{content:"";position:absolute;inset:0;pointer-events:none;
-    background:repeating-linear-gradient(to bottom, rgba(0,0,0,.07) 0 1px, transparent 1px 3px)}
-  .lcd h1{margin:0;font-size:clamp(20px,4.5vw,30px);letter-spacing:2px;
-    text-transform:uppercase;font-weight:900;text-wrap:balance}
-  .lcd .sub{margin:6px 0 0;font-size:13px;line-height:1.5;max-width:60ch}
-  /* `pre` keeps the spacing inside the face exactly as written. */
-  .dolphin{font-size:clamp(22px,5vw,34px);line-height:1;white-space:pre}
-  /* Only the eyes move, and they move by transform — the head keeps its exact
-     width because transforms don't affect layout. There is one space cell each
-     side inside the parens, so a ~half-cell shift stays clear of them. `em` so
-     it tracks the clamped font-size. */
-  #eyes{display:inline-block;transition:transform .32s ease-in-out}
-  #eyes.look-l{transform:translateX(-0.32em)}
-  #eyes.look-r{transform:translateX( 0.32em)}
-  #eyes.look-u{transform:translateY(-0.13em)}
-  #eyes.look-d{transform:translateY( 0.11em)}
-  /* Diagonals, so the scan doesn't only travel on the two axes. */
-  #eyes.look-ul{transform:translate(-0.28em,-0.11em)}
-  #eyes.look-dr{transform:translate( 0.28em, 0.09em)}
-
-  /* ---- buttons ---- */
-  .btn{font:inherit;font-weight:900;text-transform:uppercase;letter-spacing:1px;
-    cursor:pointer;border:3px solid var(--ink);background:var(--case);color:var(--ink);
-    /* 10px padding + 3px border + line-box == 44px, the minimum touch target. */
-    padding:10px 16px;box-shadow:3px 3px 0 var(--ink);text-decoration:none;
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
-    transition:background-color .12s, transform .12s, box-shadow .12s}
-  .btn:hover{background:var(--orange)}
-  .btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
-  .btn.o{background:var(--orange)}
-  .btn.o:hover{background:var(--case)}
-  .btn.full{width:100%}
-  /* Visually smaller, but never below the 44px touch target. */
-  .btn.sm{padding:6px 12px;font-size:11px;box-shadow:2px 2px 0 var(--ink)}
-  /* Unavailable-but-explainable uses aria-disabled, NOT the disabled attribute:
-     a disabled button is removed from the tab order, so a keyboard user would
-     never reach it and never hear why it can't be used. */
-  .btn:disabled,.btn[aria-disabled="true"]{background:var(--case-dim);color:#575757;
-    border-color:#575757;box-shadow:none;cursor:not-allowed}
-  .btn[aria-disabled="true"]:hover{background:var(--case-dim)}
-  .btn[aria-disabled="true"]:active{transform:none;box-shadow:none}
-  /* One focus style that survives on orange, ivory AND black grounds. */
-  :focus-visible{outline:3px solid var(--ink);outline-offset:3px}
-
-  h2{font-size:13px;letter-spacing:3px;text-transform:uppercase;margin:0 0 12px;
-    display:flex;align-items:center;gap:10px}
-  h2::after{content:"";flex:1;height:4px;background:var(--ink)}
-
-  .banner{padding:12px 14px;margin-bottom:24px;font-size:13px;line-height:1.6}
-  .banner b{text-transform:uppercase;letter-spacing:1px}
-  .banner ol{margin:8px 0 0;padding-left:20px}
-  .banner li{margin:3px 0}
-
-  /* ---- two columns: catalog left, device controls + console right ---- */
-  .layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start;
-    margin-top:24px}
-  .side{display:flex;flex-direction:column;gap:18px;min-width:0}
-  @media (max-width:920px){
-    .layout{grid-template-columns:1fr}
-    .side{order:-1}                   /* controls come first on a phone */
-  }
-  /* Desktop: pin the sidebar to the viewport so the console stays put however
-     long the app list grows. The console takes the leftover column height and
-     scrolls internally, so the apps scroll while it does not. */
-  @media (min-width:921px){
-    .side{position:sticky;top:16px;max-height:calc(100vh - 32px)}
-    .panel.console{flex:1;min-height:0;display:flex;flex-direction:column}
-    .panel.console #log{flex:1;min-height:0;max-height:none}
-  }
-
-  /* ---- connection state: the single most important thing on the page ---- */
-  .devstate{display:flex;gap:10px;align-items:center;padding:12px;
-    border:3px solid var(--ink);font-size:12px;line-height:1.45}
-  .devstate b{display:block;font-size:14px;text-transform:uppercase;letter-spacing:1px}
-  .devstate .beacon{width:18px;height:18px;flex:none;border:3px solid var(--ink);
-    background:var(--bezel)}
-  .devstate[data-state="off"]{background:var(--case-dim)}
-  .devstate[data-state="busy"]{background:var(--orange)}
-  .devstate[data-state="on"]{background:var(--ok)}
-  .devstate[data-state="on"] .beacon{background:var(--ink)}
-  /* A slow pulse while connecting; killed entirely under reduced-motion. */
-  .devstate[data-state="busy"] .beacon{animation:blink 1s steps(2,end) infinite}
-  @keyframes blink{50%{opacity:.15}}
-  @media (prefers-reduced-motion: reduce){.devstate .beacon{animation:none}}
-
-  .panel{padding:14px}
-  .panel h2{margin-bottom:10px}
-  .panel .stack{display:flex;flex-direction:column;gap:10px}
-  .panel .note{font-size:11px;line-height:1.6;color:#3a3a3a}
-
-  /* ---- app grid ---- */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:18px}
-  .card{padding:14px;display:flex;flex-direction:column;gap:9px;min-width:0}
-  .card h3{margin:0;font-size:16px;text-transform:uppercase;letter-spacing:1px;
-    text-wrap:balance;overflow-wrap:anywhere}
-  .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-  .tag{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1px;
-    padding:2px 7px;border:2px solid var(--ink);color:var(--ink);white-space:nowrap}
-  .tag.cat{background:var(--case-dim)}
-  .tag.stock{background:var(--ok)}
-  .tag.modified{background:var(--orange)}
-  .desc{font-size:13px;line-height:1.5;color:#2a2a2a;min-height:38px;overflow-wrap:anywhere}
-  .meta{font-size:11px;color:#5a5a5a;font-variant-numeric:tabular-nums}
-  .meta a{color:#3a3a3a;text-decoration:underline;text-underline-offset:2px;font-weight:900}
-  .meta a:hover{color:var(--ink);background:var(--orange)}
-  .card .btn{align-self:flex-start;margin-top:2px}
-  .empty{padding:20px;font-size:13px;line-height:1.6}
-  /* Tag legend — sits above the grid because you need it to read the cards. */
-  .legend{margin:0 0 16px;padding:10px 12px;font-size:12px;line-height:1.9}
-
-  /* ---- console, now in the sidebar and collapsible ---- */
-  .console-head{display:flex;align-items:center;justify-content:space-between;gap:8px;
-    margin-bottom:10px}
-  .console-head h2{margin:0;flex:1}
-  #log{padding:12px 14px;font-size:12px;line-height:1.6;white-space:pre-wrap;
-    max-height:300px;overflow:auto;overscroll-behavior:contain;
-    background:var(--orange-lit);color:var(--ink);border-radius:3px;
-    font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-  #log .e{color:#7d0000;font-weight:900}
-  #log .o{font-weight:900}
-  [hidden]{display:none !important}
-
-  /* ---- flash dialog ---- */
-  dialog{border:4px solid var(--ink);background:var(--case);color:var(--ink);padding:0;
-    max-width:560px;width:calc(100% - 32px);box-shadow:10px 10px 0 rgba(0,0,0,.5)}
-  dialog::backdrop{background:rgba(0,0,0,.55)}
-  .dlg-head{background:var(--ink);color:var(--orange);padding:12px 16px;
-    display:flex;align-items:center;justify-content:space-between;gap:12px}
-  /* Error face: white on dark red (9:1), not orange on red. */
-  .dlg-head.err{background:#7d0000;color:#fff}
-  .dlg-head.err h2{color:#fff}
-  .dlg-head h2{margin:0;color:var(--orange)}
-  .dlg-head h2::after{display:none}
-  .dlg-body{padding:16px;display:flex;flex-direction:column;gap:14px}
-  .boards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:520px){.boards{grid-template-columns:1fr}}
-  .board{padding:12px;text-align:left;font:inherit;cursor:pointer;
-    border:3px solid var(--ink);background:var(--case);box-shadow:3px 3px 0 var(--ink);
-    display:flex;flex-direction:column;gap:4px;min-height:44px}
-  .board:hover{background:var(--orange)}
-  .board[aria-pressed="true"]{background:var(--ink);color:var(--orange)}
-  .board b{font-size:13px;text-transform:uppercase;letter-spacing:1px}
-  .board span{font-size:11px}
-  .steps{margin:0;padding-left:20px;font-size:13px;line-height:1.65}
-  .steps li{margin:4px 0}
-  .steps b{background:var(--orange);padding:0 4px}
-  progress{width:100%;height:22px;border:3px solid var(--ink);background:var(--case-dim);
-    -webkit-appearance:none;appearance:none}
-  progress::-webkit-progress-bar{background:var(--case-dim)}
-  progress::-webkit-progress-value{background:var(--orange)}
-  progress::-moz-progress-bar{background:var(--orange)}
-  .flash-stat{font-size:12px;line-height:1.6;font-variant-numeric:tabular-nums;min-height:20px}
-  .flash-err{background:#7d0000;color:#fff;padding:10px 12px;font-size:12px;line-height:1.6}
-
-  footer{margin:28px 0 8px;font-size:11px;text-align:center;line-height:1.7}
-  footer a{font-weight:900}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <a class="skip" href="#apps">Skip to Apps</a>
@@ -246,6 +41,18 @@
       <p class="legend px">Apps tagged <span class="tag modified">Modified FW</span> need
         this port's firmware (it exports extra symbols).
         <span class="tag stock">Stock OK</span> apps also run on the original firmware.</p>
+
+      <!-- Filter bar: search + category chips. Chips are rendered from the
+           catalog's own categories once it loads. -->
+      <div class="filter px">
+        <label class="search" for="search">
+          <span aria-hidden="true">&#9906;</span>
+          <input id="search" type="search" placeholder="Search apps…"
+            autocomplete="off" spellcheck="false" aria-label="Search apps">
+        </label>
+        <div id="chips" class="chips" role="group" aria-label="Filter by category"></div>
+      </div>
+      <p id="result-count" class="count" role="status" aria-live="polite"></p>
       <div id="grid" class="grid"></div>
     </main>
 
@@ -677,29 +484,78 @@ function credit(app){
       `aria-label="${who} — original app source, opens in a new tab">${who} &#8599;</a>`
     : who;
 }
+let ALL_APPS=[];          // the full catalog, unfiltered
+let activeCat="all";      // current category chip
+let searchTerm="";        // current search box text
+
+function makeCard(app){
+  const c=document.createElement("div"); c.className="card px";
+  c.innerHTML=`<h3>${esc(app.name)}</h3>
+    <div class="row"><span class="tag cat">${esc(app.category)}</span>${badge(app.fw)}</div>
+    <div class="desc">${esc(app.description)}</div>
+    <div class="meta">${(app.size/1024).toFixed(1)} KB · ${credit(app)}</div>`;
+  const b=document.createElement("button");
+  b.className="btn"; b.textContent="Install";
+  b.dataset.install=app.id;
+  setInstallState(b,!!port,app.name);     // nothing to install to until you connect
+  b.onclick=()=>install(app);             // install() already explains if not connected
+  c.appendChild(b);
+  return c;
+}
+
+// Draw the category chips from whatever categories the catalog actually has,
+// each with its own count. "All" first, then the rest alphabetically.
+function renderChips(){
+  const chips=document.getElementById("chips");
+  const counts={};
+  ALL_APPS.forEach(a=>{counts[a.category]=(counts[a.category]||0)+1;});
+  const cats=["all",...Object.keys(counts).sort((a,b)=>a.localeCompare(b))];
+  chips.innerHTML="";
+  cats.forEach(cat=>{
+    const n = cat==="all" ? ALL_APPS.length : counts[cat];
+    const b=document.createElement("button");
+    b.type="button"; b.className="chip"; b.dataset.cat=cat;
+    b.setAttribute("aria-pressed", String(cat===activeCat));
+    b.innerHTML=`${cat==="all"?"All":esc(cat)}<span class="n">${n}</span>`;
+    b.onclick=()=>{ activeCat=cat; renderChips(); renderGrid(); };
+    chips.appendChild(b);
+  });
+}
+
+// Filter by the active category and the search box, then paint the grid.
+function renderGrid(){
+  const grid=document.getElementById("grid");
+  const q=searchTerm.trim().toLowerCase();
+  const shown=ALL_APPS.filter(a=>
+    (activeCat==="all" || a.category===activeCat) &&
+    (!q || (a.name+" "+a.description+" "+a.category).toLowerCase().includes(q)));
+  grid.innerHTML="";
+  if(!shown.length){
+    grid.innerHTML='<div class="empty px">No apps match. Try a different category or search.</div>';
+  }else{
+    const frag=document.createDocumentFragment();
+    shown.forEach(a=>frag.appendChild(makeCard(a)));
+    grid.appendChild(frag);
+  }
+  const label = activeCat==="all" ? "" : ` in ${activeCat}`;
+  document.getElementById("result-count").innerHTML =
+    `Showing <b>${shown.length}</b> of ${ALL_APPS.length} apps${esc(label)}`;
+}
+
 async function loadCatalog(){
   const grid=document.getElementById("grid");
   try{
     const cat=await (await fetch("catalog.json")).json();
-    grid.innerHTML="";
     if(!cat.apps||!cat.apps.length){
       grid.innerHTML='<div class="empty px">No apps in the catalog yet.</div>';
       log("catalog loaded, but it is empty.");
       return;
     }
-    cat.apps.forEach(app=>{
-      const c=document.createElement("div"); c.className="card px";
-      c.innerHTML=`<h3>${esc(app.name)}</h3>
-        <div class="row"><span class="tag cat">${esc(app.category)}</span>${badge(app.fw)}</div>
-        <div class="desc">${esc(app.description)}</div>
-        <div class="meta">${(app.size/1024).toFixed(1)} KB · ${credit(app)}</div>`;
-      const b=document.createElement("button");
-      b.className="btn"; b.textContent="Install";
-      b.dataset.install=app.id;
-      setInstallState(b,!!port,app.name);     // nothing to install to until you connect
-      b.onclick=()=>install(app);             // install() already explains if not connected
-      c.appendChild(b); grid.appendChild(c);
-    });
+    ALL_APPS=cat.apps;
+    renderChips();
+    renderGrid();
+    const search=document.getElementById("search");
+    search.oninput=()=>{ searchTerm=search.value; renderGrid(); };
     log(`catalog loaded: ${cat.apps.length} apps.`);
   }catch(e){
     grid.innerHTML='<div class="empty px"><b>Could not load the catalog.</b><br>'+
