@@ -78,8 +78,19 @@ static void ble_sync_stop(TagTinkerApp* app) {
     if(!app || !app->ble_sync_active) return;
     sync_clear_active_job(app);
     bt_set_status_changed_callback(app->bt, NULL, NULL);
+    /* bt_disconnect drops the phone connection. We deliberately do NOT call
+     * bt_profile_restore_default here: it restarts a BLE profile, and
+     * ble_serial_alloc() blocks up to 5 s waiting for the GATT service to come
+     * back. This runs on the view-dispatcher thread during scene-exit (Back),
+     * so that wait froze all input for up to 5 s (BUGS.md #4).
+     *
+     * It is also redundant: TagTinker's sync profile IS ble_profile_serial, the
+     * same profile restore_default would start — so after bt_disconnect the
+     * radio is already in the default resting state. The app's own full-exit
+     * path (tagtinker_app.c) likewise closes BT without restoring. If a future
+     * feature ever switches to a non-serial profile, restore it there instead,
+     * off the UI thread. */
     bt_disconnect(app->bt);
-    bt_profile_restore_default(app->bt);
     app->ble_serial = NULL;
     app->ble_serial_configured = false;
     app->ble_sync_active = false;

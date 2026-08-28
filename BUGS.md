@@ -108,6 +108,27 @@ silent deadlock into a capturable panic. **Keep this only until (A)/(B) land** �
 it converts a freeze into a reboot, which is right for debugging and wrong for
 daily use.
 
+## 4. TagTinker: ~5 s input freeze when leaving the sync screen — FIXED
+- **Symptom:** press Back out of TagTinker's About/sync screen and all input is
+  dead for up to 5 seconds before the previous menu appears.
+- **Found in the same coredump as #3:** BtSrv was stuck in `ble_serial_alloc`
+  (`components/ble_serial/ble_serial.c`) waiting up to 5 s on a semaphore for the
+  BLE GATT service to (re)start, and TagTinker's view-dispatcher thread was
+  blocked behind it in `bt_profile_start`.
+- **Cause:** the scene-exit path (`tagtinker_scene_about_on_exit` → `ble_sync_stop`)
+  called `bt_profile_restore_default()` *on the UI thread*. That restarts a BLE
+  profile — the blocking 5 s GATT-start wait — during the Back transition.
+- **Fix** (`applications_user/TagTinker-main/scenes/tagtinker_scene_about.c`):
+  drop the `bt_profile_restore_default()` from `ble_sync_stop`; keep
+  `bt_disconnect()`. It was redundant — TagTinker's sync profile IS
+  `ble_profile_serial`, the same profile restore_default would start, so after
+  the disconnect the radio is already at its default resting state. The app's own
+  full-exit path likewise closes BT without restoring.
+- **General rule:** never call a blocking BT profile change on a UI/input thread.
+  `bt_profile_start` / `bt_profile_restore_default` block on BtSrv, which blocks on
+  a GATT-start semaphore for up to 5 s.
+- **Status:** fixed in the FAP, pending on-device confirmation the freeze is gone.
+
 ## Diagnosis blocker → now fixed
 The panic backtrace isn't visible over USB (goes to UART0; the S3's USB-Serial/JTAG
 console can't share the PHY with the TinyUSB CDC the firmware uses). A coredump
