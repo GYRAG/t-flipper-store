@@ -31,6 +31,12 @@ class _AnyEnum:
 
 
 def main():
+    # LF-only stdout: buildFap.sh reads this line by line, and Windows CRLF would
+    # leave a stray "\r" on every value. See the same note in fap_app_info.py.
+    try:
+        sys.stdout.reconfigure(newline="\n")
+    except AttributeError:
+        pass
     if len(sys.argv) != 2:
         sys.stderr.write("usage: fap_lib_info.py <app_dir>\n")
         return 2

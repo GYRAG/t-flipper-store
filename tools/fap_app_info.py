@@ -62,25 +62,35 @@ def _walk_sources(root):
                 yield os.path.join(dirpath, fn)
 
 
+def _rel(path, app_dir):
+    """App-dir-relative path with forward slashes ALWAYS.
+
+    os.path.relpath yields backslashes on Windows, but the output is consumed by
+    buildFap.sh as `$APP_DIR/$rel` — and git-bash then hands that to gcc, where a
+    backslash starts an escape (`ir\tagtinker_ir.c` -> `ir<TAB>agtinker_ir.c`) and
+    the file is not found. Forward slashes work on every platform. """
+    return os.path.relpath(path, app_dir).replace(os.sep, "/")
+
+
 def _match(app_dir, pattern):
     """Return app-dir-relative source files matching one fbt source pattern."""
     full = os.path.join(app_dir, pattern)
     out = []
     if os.path.isdir(full):
         for m in _walk_sources(full):
-            out.append(os.path.relpath(m, app_dir))
+            out.append(_rel(m, app_dir))
     elif "/" not in pattern:
         # bare filename (maybe wildcard): match by basename anywhere in the tree
         for m in _walk_sources(app_dir):
             if fnmatch.fnmatch(os.path.basename(m), pattern):
-                out.append(os.path.relpath(m, app_dir))
+                out.append(_rel(m, app_dir))
     else:
         for m in glob.glob(full, recursive=True):
             if os.path.isdir(m):
                 for f in _walk_sources(m):
-                    out.append(os.path.relpath(f, app_dir))
+                    out.append(_rel(f, app_dir))
             elif os.path.isfile(m) and m.endswith(_SRC_EXTS):
-                out.append(os.path.relpath(m, app_dir))
+                out.append(_rel(m, app_dir))
     return out
 
 
@@ -102,6 +112,14 @@ def _resolve(app_dir, patterns):
 
 
 def main():
+    # buildFap.sh reads this output line by line. On Windows, Python's text-mode
+    # stdout turns every "\n" into "\r\n", and the shell's `read` keeps the "\r"
+    # on each value — so a source path arrives as "foo.c\r" and gcc can't find it.
+    # Force LF so the tab-separated-lines contract holds on every platform.
+    try:
+        sys.stdout.reconfigure(newline="\n")
+    except AttributeError:
+        pass  # <3.7; not our interpreter, but don't hard-fail
     if len(sys.argv) != 2:
         sys.stderr.write("usage: fap_app_info.py <app_dir>\n")
         return 2
