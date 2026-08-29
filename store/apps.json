@@ -235,30 +235,6 @@
       "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/mandelbrot"
     },
     {
-      "id": "montyhall",
-      "dir": "montyhall",
-      "category": "Games",
-      "author": "@DevMilanIan",
-      "description": "Monty Hall asks you to guess which closed door a prize is behind.",
-      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/montyhall"
-    },
-    {
-      "id": "reversi",
-      "dir": "reversi",
-      "category": "Games",
-      "author": "@dimat",
-      "description": "Reversi game, the game controls should be intuitive. Longs press on...",
-      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/reversi"
-    },
-    {
-      "id": "videopoker",
-      "dir": "videopoker",
-      "category": "Games",
-      "author": "@PixlEmly",
-      "description": "Video poker is a casino game based on five-card draw poker",
-      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/videopoker"
-    },
-    {
       "id": "secret_toggle",
       "dir": "secret_toggle",
       "category": "Games",
