@@ -87,7 +87,7 @@ def main():
         for pat in lib["sources"]:
             matches = sorted(glob.glob(os.path.join(lib_root, pat)))
             for m in matches:
-                rel = os.path.relpath(m, app_dir)
+                rel = os.path.relpath(m, app_dir).replace(os.sep, "/")
                 out.append(f"SOURCE\t{rel}")
         for d in lib["cdefines"]:
             out.append(f"CDEFINE\t{d}")
