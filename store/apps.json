@@ -251,28 +251,12 @@
       "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/reversi"
     },
     {
-      "id": "t_rex_runner",
-      "dir": "t-rex-runner",
-      "category": "Games",
-      "author": "@Rrycbarm",
-      "description": "Play the port of the Chrome browser T-Rex game on your Flipper Zero.",
-      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/t-rex-runner"
-    },
-    {
       "id": "videopoker",
       "dir": "videopoker",
       "category": "Games",
       "author": "@PixlEmly",
       "description": "Video poker is a casino game based on five-card draw poker",
       "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/videopoker"
-    },
-    {
-      "id": "paper_plane",
-      "dir": "flipper_plane",
-      "category": "Games",
-      "author": "@Larry-the-Pig",
-      "description": "Guide a paper plane through obstacles to get the highest score.",
-      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/flipper_plane"
     },
     {
       "id": "secret_toggle",
