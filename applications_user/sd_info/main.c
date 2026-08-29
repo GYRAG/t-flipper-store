@@ -459,11 +459,16 @@ int32_t sd_card_info_app(void* p) {
         if(furi_message_queue_get(app->event_queue, &event, 100) == FuriStatusOk) {
             if(event.type == InputTypeShort) {
                 switch(event.key) {
+                /* T-Embed: paging sat on Left/Right, which the dial can only
+                 * reach by holding the encoder in while turning. A plain turn
+                 * (Up/Down) pages too. */
+                case InputKeyDown:
                 case InputKeyRight:
                     if(app->current_page < TOTAL_PAGES - 1) {
                         app->current_page++;
                     }
                     break;
+                case InputKeyUp:
                 case InputKeyLeft:
                     if(app->current_page > 0) {
                         app->current_page--;

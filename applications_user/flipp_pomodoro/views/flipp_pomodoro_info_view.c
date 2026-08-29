@@ -96,10 +96,12 @@ bool flipp_pomodoro_info_view_input_callback(InputEvent* event, void* ctx) {
     FlippPomodoroInfoView* info_view = ctx;
 
     if(event->type == InputTypePress) {
-        if(event->key == InputKeyRight && info_view->resume_timer_cb != NULL) {
+        /* T-Embed: reachable with a plain dial turn, not only hold-and-turn. */
+        if((event->key == InputKeyRight || event->key == InputKeyDown) &&
+           info_view->resume_timer_cb != NULL) {
             info_view->resume_timer_cb(info_view->user_action_cb_ctx);
             return ViewInputConsumed;
-        } else if(event->key == InputKeyLeft) {
+        } else if(event->key == InputKeyLeft || event->key == InputKeyUp) {
             flipp_pomodoro_info_view_toggle_mode(info_view);
             return ViewInputConsumed;
         }

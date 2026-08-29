@@ -145,7 +145,8 @@ int32_t caesar_cipher_app() {
     view_dispatcher_run(caesar_state->view_dispatcher);
 
     furi_record_close(RECORD_GUI);
-    furi_mutex_free(caesar_state->mutex);
+    /* caesar_cipher_state_free() already frees the mutex; freeing it here too
+     * corrupted the heap and reset the device on Back. */
     caesar_cipher_state_free(caesar_state);
 
     return 0;

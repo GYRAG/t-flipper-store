@@ -375,9 +375,15 @@ static void input_callback(InputEvent* input_event, void* ctx) {
         notification_message(notifications, &sequence_blink_magenta_100);
         notification_message(notifications, &sequence_single_vibro);
         furi_record_close(RECORD_NOTIFICATION);
-    } else if(input_event->type == InputTypeShort && input_event->key == InputKeyRight) {
+        /* T-Embed: category switching sat on Left/Right, i.e. hold-the-encoder
+         * -and-turn. Up/Down are unused here, so a plain turn switches too. */
+    } else if(
+        input_event->type == InputTypeShort &&
+        (input_event->key == InputKeyRight || input_event->key == InputKeyDown)) {
         current_category = (current_category + 1) % 3;
-    } else if(input_event->type == InputTypeShort && input_event->key == InputKeyLeft) {
+    } else if(
+        input_event->type == InputTypeShort &&
+        (input_event->key == InputKeyLeft || input_event->key == InputKeyUp)) {
         current_category = (current_category + 2) % 3;
     }
 }

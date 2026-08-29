@@ -274,10 +274,15 @@ int32_t hex_editor_app(void* p) {
                     if(event.type == InputTypeRepeat) {
                         offset_modifier = 4;
                     }
-                    if(event.key == InputKeyRight) {
+                    /* T-Embed: in edit mode Up/Down were unused while the value
+                     * sat on Left/Right, so a dial could not change the byte at
+                     * all. A plain turn now adjusts it. (Browse mode keeps both
+                     * axes: the dial walks lines, hold-and-turn walks
+                     * characters within one.) */
+                    if(event.key == InputKeyRight || event.key == InputKeyDown) {
                         hex_editor->model->editable_char += offset_modifier;
                     }
-                    if(event.key == InputKeyLeft) {
+                    if(event.key == InputKeyLeft || event.key == InputKeyUp) {
                         hex_editor->model->editable_char -= offset_modifier;
                     }
 

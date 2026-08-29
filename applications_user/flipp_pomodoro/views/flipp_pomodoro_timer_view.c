@@ -175,10 +175,16 @@ bool flipp_pomodoro_view_timer_input_callback(InputEvent* event, void* ctx) {
         return ViewInputNotConusmed;
     }
 
+    /* T-Embed: both actions sat on Left/Right, which the dial reaches only by
+     * holding the encoder in while turning, so the stage skip and the settings
+     * screen were effectively unreachable. Up/Down are unused here, so a plain
+     * turn drives them too. */
     switch(event->key) {
+    case InputKeyDown:
     case InputKeyRight:
         timer->right_cb(timer->callback_context);
         return ViewInputConsumed;
+    case InputKeyUp:
     case InputKeyLeft:
         timer->left_cb(timer->callback_context);
         return ViewInputConsumed;
