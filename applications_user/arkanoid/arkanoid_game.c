@@ -420,24 +420,21 @@ int32_t arkanoid_game_app(void* p) {
                     case InputKeyBack:
                         processing = false;
                         break;
+                    // T-Embed: the dial is the paddle. Plain rotation (Up/Down)
+                    // steers left/right — turn the way you want the paddle to go.
+                    // Left/Right (hold-and-turn) does the same, so both work.
+                    // The old Up/Down speed control is dropped; a knob can't spare
+                    // a second axis for it.
                     case InputKeyRight:
+                    case InputKeyDown:
                         if(arkanoid_state->xPaddle < FLIPPER_LCD_WIDTH - 12) {
                             arkanoid_state->xPaddle += 8;
                         }
                         break;
                     case InputKeyLeft:
+                    case InputKeyUp:
                         if(arkanoid_state->xPaddle > 0) {
                             arkanoid_state->xPaddle -= 8;
-                        }
-                        break;
-                    case InputKeyUp:
-                        if(arkanoid_state->speed < MAX_SPEED) {
-                            arkanoid_state->speed++;
-                        }
-                        break;
-                    case InputKeyDown:
-                        if(arkanoid_state->speed > 1) {
-                            arkanoid_state->speed--;
                         }
                         break;
                     case InputKeyOk:

@@ -353,18 +353,24 @@ int32_t tictactoe_game_app(void* p) {
                     case InputKeyBack:
                         processing = false;
                         break;
-                    case InputKeyRight:
-                        tictactoe_state->selX++;
-                        break;
-                    case InputKeyLeft:
-                        tictactoe_state->selX--;
-                        break;
-                    case InputKeyUp:
-                        tictactoe_state->selY--;
-                        break;
+                    // T-Embed: a dial has one axis, so walk the 9 cells in a
+                    // single line (reading order, wrapping) instead of X/Y. Plain
+                    // rotation (Up/Down) steps through every square like typing;
+                    // Left/Right (hold-and-turn) does the same. idx = selY*3+selX.
                     case InputKeyDown:
-                        tictactoe_state->selY++;
+                    case InputKeyRight: {
+                        int idx = (tictactoe_state->selY * 3 + tictactoe_state->selX + 1) % 9;
+                        tictactoe_state->selX = idx % 3;
+                        tictactoe_state->selY = idx / 3;
                         break;
+                    }
+                    case InputKeyUp:
+                    case InputKeyLeft: {
+                        int idx = (tictactoe_state->selY * 3 + tictactoe_state->selX + 8) % 9;
+                        tictactoe_state->selX = idx % 3;
+                        tictactoe_state->selY = idx / 3;
+                        break;
+                    }
                     case InputKeyOk:
                         tictactoe_state->button_state = true;
                         break;
