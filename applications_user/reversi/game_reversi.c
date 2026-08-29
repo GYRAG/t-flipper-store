@@ -214,34 +214,24 @@ bool handle_key_game(GameState* game_state, InputKey key) {
             human_move(game_state);
         }
         break;
+    // T-Embed: one dial axis, so walk all 64 cells in reading order (wrapping).
+    // Turning steps to the next/prev square; Left/Right work the same.
     case InputKeyUp:
-        if(game_state->cursor_y > 0) {
-            game_state->cursor_y--;
-        } else {
-            game_state->cursor_y = BOARD_SIZE - 1;
-        }
+    case InputKeyLeft: {
+        int idx = (game_state->cursor_y * BOARD_SIZE + game_state->cursor_x + BOARD_SIZE * BOARD_SIZE - 1) %
+                  (BOARD_SIZE * BOARD_SIZE);
+        game_state->cursor_x = idx % BOARD_SIZE;
+        game_state->cursor_y = idx / BOARD_SIZE;
         break;
+    }
     case InputKeyDown:
-        if(game_state->cursor_y < BOARD_SIZE - 1) {
-            game_state->cursor_y++;
-        } else {
-            game_state->cursor_y = 0;
-        }
+    case InputKeyRight: {
+        int idx = (game_state->cursor_y * BOARD_SIZE + game_state->cursor_x + 1) %
+                  (BOARD_SIZE * BOARD_SIZE);
+        game_state->cursor_x = idx % BOARD_SIZE;
+        game_state->cursor_y = idx / BOARD_SIZE;
         break;
-    case InputKeyLeft:
-        if(game_state->cursor_x > 0) {
-            game_state->cursor_x--;
-        } else {
-            game_state->cursor_x = BOARD_SIZE - 1;
-        }
-        break;
-    case InputKeyRight:
-        if(game_state->cursor_x < BOARD_SIZE - 1) {
-            game_state->cursor_x++;
-        } else {
-            game_state->cursor_x = 0;
-        }
-        break;
+    }
     default:
         break;
     }

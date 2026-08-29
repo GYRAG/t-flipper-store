@@ -287,22 +287,26 @@ int32_t secret_toggle_app(void* p) {
                     if(tempPluginEvent.input.type == InputTypeShort) //short press
                     {
                         switch(tempPluginEvent.input.key) {
+                        // T-Embed: one dial axis, so walk all 49 squares in
+                        // reading order (wrapping). Turning steps next/prev.
                         case InputKeyUp:
-                            newGame->myCursorY -= 1;
-                            clampCursor(newGame);
+                        case InputKeyLeft: {
+                            int idx = (newGame->myCursorY * BOARD_WIDTH + newGame->myCursorX +
+                                       BOARD_NUM_SQUARES - 1) %
+                                      BOARD_NUM_SQUARES;
+                            newGame->myCursorX = idx % BOARD_WIDTH;
+                            newGame->myCursorY = idx / BOARD_WIDTH;
                             break;
+                        }
                         case InputKeyDown:
-                            newGame->myCursorY += 1;
-                            clampCursor(newGame);
+                        case InputKeyRight: {
+                            int idx =
+                                (newGame->myCursorY * BOARD_WIDTH + newGame->myCursorX + 1) %
+                                BOARD_NUM_SQUARES;
+                            newGame->myCursorX = idx % BOARD_WIDTH;
+                            newGame->myCursorY = idx / BOARD_WIDTH;
                             break;
-                        case InputKeyRight:
-                            newGame->myCursorX += 1;
-                            clampCursor(newGame);
-                            break;
-                        case InputKeyLeft:
-                            newGame->myCursorX -= 1;
-                            clampCursor(newGame);
-                            break;
+                        }
                         case InputKeyOk:
                             gameToggleSquare(newGame, getCursorSquareIndex(newGame));
                             newGame->myNumToggles += 1;

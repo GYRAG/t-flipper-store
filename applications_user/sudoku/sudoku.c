@@ -616,22 +616,27 @@ int32_t sudoku_main(void* p) {
             if(event.type == InputTypePress || event.type == InputTypeLong ||
                event.type == InputTypeRepeat) {
                 switch(event.key) {
+                // T-Embed: the dial has one axis, so walk all 81 cells in
+                // reading order (wrapping). Turning steps to the next/prev cell.
                 case InputKeyLeft:
+                case InputKeyUp: {
                     state->blockInputUntilRelease = false;
-                    state->cursorX = (state->cursorX + BOARD_SIZE - 1) % BOARD_SIZE;
+                    int idx =
+                        (state->cursorY * BOARD_SIZE + state->cursorX + BOARD_SIZE * BOARD_SIZE - 1) %
+                        (BOARD_SIZE * BOARD_SIZE);
+                    state->cursorX = idx % BOARD_SIZE;
+                    state->cursorY = idx / BOARD_SIZE;
                     break;
+                }
                 case InputKeyRight:
+                case InputKeyDown: {
                     state->blockInputUntilRelease = false;
-                    state->cursorX = (state->cursorX + 1) % BOARD_SIZE;
+                    int idx = (state->cursorY * BOARD_SIZE + state->cursorX + 1) %
+                              (BOARD_SIZE * BOARD_SIZE);
+                    state->cursorX = idx % BOARD_SIZE;
+                    state->cursorY = idx / BOARD_SIZE;
                     break;
-                case InputKeyUp:
-                    state->blockInputUntilRelease = false;
-                    state->cursorY = (state->cursorY + BOARD_SIZE - 1) % BOARD_SIZE;
-                    break;
-                case InputKeyDown:
-                    state->blockInputUntilRelease = false;
-                    state->cursorY = (state->cursorY + 1) % BOARD_SIZE;
-                    break;
+                }
                 case InputKeyOk:
                     if(userInput && !state->blockInputUntilRelease) {
                         int32_t flags = state->board[state->cursorX][state->cursorY] & FLAGS_MASK;

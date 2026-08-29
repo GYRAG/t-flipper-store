@@ -340,32 +340,10 @@ int32_t montyhall_game_app(void* p) {
         if(event_status == FuriStatusOk) {
             if(event.type == InputTypeShort) {
                 switch(event.key) {
-                case InputKeyUp: /* <debug>
-                    if(monty_state->game_state == RoundOne) {
-                        monty_state->score++;
-                    } else if(monty_state->game_state == RoundTwo) {
-                        monty_state->score += 2;
-                    } else if(monty_state->game_state == RoundThree) {
-                        monty_state->score += 3;
-                    } else if(monty_state->game_state == RoundFour) {
-                        monty_state->score += 4;
-                    } else if(monty_state->game_state == GameOver) {
-                        monty_state->score += 5;
-                    } </debug> */
-                    break;
-                case InputKeyDown: /* <debug>
-                    if(monty_state->game_state == RoundOne) {
-                        monty_state->score--;
-                    } else if(monty_state->game_state == RoundTwo) {
-                        monty_state->score -= 2;
-                    } else if(monty_state->game_state == RoundThree) {
-                        monty_state->score -= 3;
-                    } else if(monty_state->game_state == RoundFour) {
-                        monty_state->score -= 4;
-                    } else if(monty_state->game_state == GameOver) {
-                        monty_state->score -= 5;
-                    } </dubug> */
-                    break;
+                // T-Embed: turn the dial to pick a side door — up = left door,
+                // down = right door — OK picks the middle. (Removed dead debug
+                // score keys that used to sit on Up/Down.)
+                case InputKeyUp:
                 case InputKeyLeft:
                     if(monty_state->game_state == RoundOne) {
                         selectDoor(monty_state, 0);
@@ -403,6 +381,7 @@ int32_t montyhall_game_app(void* p) {
                         monty_state->game_state = GameOver;
                     }
                     break;
+                case InputKeyDown:
                 case InputKeyRight:
                     if(monty_state->game_state == RoundOne) {
                         selectDoor(monty_state, 2);

@@ -740,6 +740,10 @@ int32_t video_poker_app(void* p) {
                         poker_player->GameState = 3;
                     }
                     break;
+                // T-Embed: turning the dial (Up) cycles the bet / the held card
+                // via the same wrap logic as Left, so one direction reaches all
+                // five cards. Down still deals.
+                case InputKeyUp:
                 case InputKeyLeft:
                     if(poker_player->GameState == 1) {
                         if(poker_player->bet - 10 >= poker_player->minbet) {
