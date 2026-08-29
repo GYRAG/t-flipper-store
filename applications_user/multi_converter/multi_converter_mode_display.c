@@ -162,18 +162,16 @@ void multi_converter_mode_display_navigation(
     default:
         break;
 
+    /* T-Embed: a dial turn emits Up/Down, which here jumped a whole 9-key row
+     * and so could only ever reach two keys. Walk the keypad one key at a time
+     * in reading order instead, same as Left/Right. */
     case InputKeyUp:
     case InputKeyDown:
-        if((multi_converter_state->display).key >= 9)
-            (multi_converter_state->display).key -= 9;
-        else
-            (multi_converter_state->display).key += 9;
-        break;
-
     case InputKeyLeft:
     case InputKeyRight:
 
-        (multi_converter_state->display).key += (key == InputKeyLeft ? -1 : 1);
+        (multi_converter_state->display).key +=
+            ((key == InputKeyLeft || key == InputKeyUp) ? -1 : 1);
 
         if((multi_converter_state->display).key > MULTI_CONVERTER_DISPLAY_KEYS - 1)
             (multi_converter_state->display).key = 0;

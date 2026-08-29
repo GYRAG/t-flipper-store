@@ -1,6 +1,7 @@
 #include "input_handling.h"
 #include "calculator_state.h"
 #include "calculator.h"
+#include "utilities.h"
 #include <furi.h>
 #include <furi_hal.h>
 #include <gui/gui.h>
@@ -18,50 +19,37 @@ void calculator_input_callback(InputEvent* input_event, void* ctx) {
     furi_message_queue_put(event_queue, input_event, FuriWaitForever);
 }
 
+/* T-Embed: one-axis dial, so Up/Down alone could only ever reach one column of
+ * the keypad. Walk every key linearly in reading order with wrap. The grid is
+ * ragged - row 0 is the lone MODE key and row 4 has no fifth key - so step over
+ * cells getKeyAtPosition() reports as blank rather than letting the cursor
+ * settle on one. Left/Right do the same, so the hold-and-turn modifier is not
+ * needed to reach a key. */
+#define PC_GRID_W 5
+#define PC_GRID_H 5
+
+static void pc_step_key(Calculator* calculator_state, int delta) {
+    int idx = calculator_state->position.y * PC_GRID_W + calculator_state->position.x;
+    for(int guard = 0; guard < PC_GRID_W * PC_GRID_H; guard++) {
+        idx = (idx + delta + PC_GRID_W * PC_GRID_H) % (PC_GRID_W * PC_GRID_H);
+        short x = idx % PC_GRID_W, y = idx / PC_GRID_W;
+        if(getKeyAtPosition(x, y) != ' ') {
+            calculator_state->position.x = x;
+            calculator_state->position.y = y;
+            return;
+        }
+    }
+}
+
 void handle_short_press(Calculator* calculator_state, ViewPort* view_port, InputEvent* event) {
     switch(event->key) {
     case InputKeyUp:
-        if(calculator_state->position.y > 0) {
-            if(calculator_state->position.y == 1) {
-                calculator_state->position.x = 0;
-            }
-            calculator_state->position.y--;
-            // if(calculator_state->position.y == 1) { // If cursor moves to row 2, skip it
-            //     calculator_state->position.y--;
-            // }
-        }
+    case InputKeyLeft:
+        pc_step_key(calculator_state, -1);
         break;
     case InputKeyDown:
-        if(calculator_state->position.y < 5 - 1) {
-            if(calculator_state->position.y == 5 - 2 &&
-               (calculator_state->position.x == 3 || calculator_state->position.x == 4)) {
-                calculator_state->position.y = 5 - 1;
-                calculator_state->position.x = 3;
-            } else {
-                calculator_state->position.y++;
-            }
-            // if(calculator_state->position.y == 1) { // If cursor moves to row 2, skip it
-            //     calculator_state->position.y++;
-            // }
-        }
-        break;
-    case InputKeyLeft:
-        if(calculator_state->position.y > 0 && calculator_state->position.x > 0) {
-            calculator_state->position.x--;
-        }
-        break;
     case InputKeyRight:
-        if(calculator_state->position.y < 1) {
-            // Cursor stays in the same column
-        } else if(calculator_state->position.y == 5 - 1) {
-            if(calculator_state->position.x < 3) {
-                calculator_state->position.x++;
-            }
-        } else {
-            if(calculator_state->position.x < 5 - 1) {
-                calculator_state->position.x++;
-            }
-        }
+        pc_step_key(calculator_state, +1);
         break;
     case InputKeyOk:
         if(calculator_state->position.y == 0) {

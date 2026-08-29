@@ -77,6 +77,11 @@ static bool calendar_year_picker_input_callback(InputEvent* event, void* context
                 consumed = true;
                 break;
 
+            /* T-Embed: a dial turn emits Up/Down, which here jumped a whole
+             * row and left most cells unreachable. grid_cursor is already a
+             * linear index, so walk it one cell at a time; Left/Right (the
+             * hold-and-turn modifier) do the same. */
+            case InputKeyDown:
             case InputKeyRight:
                 if(model->grid_cursor ==
                    model->first_display_year + GRID_TEMPLATE_COLUMNS * GRID_TEMPLATE_ROWS) {
@@ -86,28 +91,12 @@ static bool calendar_year_picker_input_callback(InputEvent* event, void* context
                 consumed = true;
                 break;
 
+            case InputKeyUp:
             case InputKeyLeft:
                 if(model->grid_cursor == model->first_display_year) {
                     model->first_display_year -= GRID_TEMPLATE_COLUMNS * GRID_TEMPLATE_ROWS;
                 }
                 model->grid_cursor--;
-                consumed = true;
-                break;
-
-            case InputKeyUp:
-                if(model->grid_cursor - model->first_display_year <= GRID_TEMPLATE_COLUMNS) {
-                    model->first_display_year -= GRID_TEMPLATE_COLUMNS * GRID_TEMPLATE_ROWS;
-                }
-                model->grid_cursor -= 4;
-                consumed = true;
-                break;
-
-            case InputKeyDown:
-                if(model->grid_cursor - model->first_display_year >=
-                   (GRID_TEMPLATE_ROWS - 1) * GRID_TEMPLATE_COLUMNS) {
-                    model->first_display_year += GRID_TEMPLATE_COLUMNS * GRID_TEMPLATE_ROWS;
-                }
-                model->grid_cursor += 4;
                 consumed = true;
                 break;
 

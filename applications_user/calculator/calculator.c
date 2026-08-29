@@ -342,26 +342,26 @@ int32_t calculator_app(void* p) {
 
         if(event.type == InputTypeShort) {
             switch(event.key) {
+            /* T-Embed: the dial is one axis, so Up/Down alone could only ever
+             * reach one column of the 4x5 keypad. Walk all 20 keys linearly in
+             * reading order (idx = y*4 + x) with wrap; Left/Right do the same,
+             * so the awkward hold-and-turn isn't needed to reach a key. */
             case InputKeyUp:
-                if(calculator_state->position.y > 0) {
-                    calculator_state->position.y--;
-                }
+            case InputKeyLeft: {
+                int idx = calculator_state->position.y * 4 + calculator_state->position.x;
+                idx = (idx + 19) % 20;
+                calculator_state->position.x = idx % 4;
+                calculator_state->position.y = idx / 4;
                 break;
+            }
             case InputKeyDown:
-                if(calculator_state->position.y < 4) {
-                    calculator_state->position.y++;
-                }
+            case InputKeyRight: {
+                int idx = calculator_state->position.y * 4 + calculator_state->position.x;
+                idx = (idx + 1) % 20;
+                calculator_state->position.x = idx % 4;
+                calculator_state->position.y = idx / 4;
                 break;
-            case InputKeyLeft:
-                if(calculator_state->position.x > 0) {
-                    calculator_state->position.x--;
-                }
-                break;
-            case InputKeyRight:
-                if(calculator_state->position.x < 3) {
-                    calculator_state->position.x++;
-                }
-                break;
+            }
             case InputKeyOk: {
                 //add the selected button to the text
                 //char* text = calculator_state->text;

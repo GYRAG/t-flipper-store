@@ -72,6 +72,11 @@ static bool calendar_month_picker_input_callback(InputEvent* event, void* contex
                 consumed = true;
                 break;
 
+            /* T-Embed: a dial turn emits Up/Down, which here jumped a whole
+             * row and left most cells unreachable. grid_cursor is already a
+             * linear index, so walk it one cell at a time; Left/Right (the
+             * hold-and-turn modifier) do the same. */
+            case InputKeyDown:
             case InputKeyRight:
                 if(model->grid_cursor + 1 < NUMBER_OF_MONTHS) {
                     model->grid_cursor++;
@@ -79,23 +84,10 @@ static bool calendar_month_picker_input_callback(InputEvent* event, void* contex
                 consumed = true;
                 break;
 
+            case InputKeyUp:
             case InputKeyLeft:
                 if(model->grid_cursor > 0) {
                     model->grid_cursor--;
-                }
-                consumed = true;
-                break;
-
-            case InputKeyUp:
-                if(model->grid_cursor > GRID_TEMPLATE_COLUMNS - 1) {
-                    model->grid_cursor -= GRID_TEMPLATE_COLUMNS;
-                }
-                consumed = true;
-                break;
-
-            case InputKeyDown:
-                if(model->grid_cursor < GRID_TEMPLATE_COLUMNS * (GRID_TEMPLATE_ROWS - 1)) {
-                    model->grid_cursor += GRID_TEMPLATE_COLUMNS;
                 }
                 consumed = true;
                 break;
