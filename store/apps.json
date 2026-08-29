@@ -473,6 +473,46 @@
       "author": "@Nem0oo",
       "description": "Phone camera shutter over Bluetooth. Turn to set the interval, OK to shoot.",
       "url": "https://github.com/Nem0oo/flipper-zero-bluetooth-trigger"
+    },
+    {
+      "id": "ir_scope",
+      "dir": "ir_scope",
+      "category": "Infrared",
+      "author": "@kallanreed",
+      "description": "Visualize incoming IR signals live. Point a remote at the IR receiver.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/base_pack/ir_scope"
+    },
+    {
+      "id": "ac_detector",
+      "dir": "ac_detector",
+      "category": "Infrared",
+      "author": "xMasterX",
+      "description": "Identify which IR protocol an air-conditioner remote speaks.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/ac_detector"
+    },
+    {
+      "id": "timed_remote",
+      "dir": "timed-remote",
+      "category": "Infrared",
+      "author": "A. Damsgaard",
+      "description": "Send a saved IR command after a countdown.",
+      "url": "https://github.com/anders-dc/timed-remote"
+    },
+    {
+      "id": "usb_ccb",
+      "dir": "usb_consumer_control",
+      "category": "USB",
+      "author": "piraija",
+      "description": "USB media keys — play/pause and volume to a PC over the USB cable.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/usb_consumer_control"
+    },
+    {
+      "id": "usb_hid_autofire",
+      "dir": "usb_hid_autofire",
+      "category": "USB",
+      "author": "@pbek",
+      "description": "Auto-send mouse left-clicks to a PC over USB.",
+      "url": "https://github.com/pbek/usb_hid_autofire"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
