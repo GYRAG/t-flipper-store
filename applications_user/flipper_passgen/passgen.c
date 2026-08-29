@@ -90,7 +90,9 @@ void state_free(PassGen* app) {
 
 static void input_callback(InputEvent* input_event, void* ctx) {
     PassGen* app = ctx;
-    if(input_event->type == InputTypeShort) {
+    /* Long is let through for the Ok hold that swaps which field the dial
+     * drives; without it the event loop never sees a long press at all. */
+    if(input_event->type == InputTypeShort || input_event->type == InputTypeLong) {
         furi_message_queue_put(app->input_queue, input_event, 0);
     }
 }

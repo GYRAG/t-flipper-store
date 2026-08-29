@@ -12,7 +12,7 @@
  *
  * Encoder button (BOOT/IO00):
  *   Short press (without rotation) -> InputKeyOk
- *   Long press  -> InputKeyBack
+ *   Long press  -> InputKeyOk / InputTypeLong (NOT Back - Back is the side key)
  *
  * Side key button (IO06):
  *   Short press -> InputKeyBack
