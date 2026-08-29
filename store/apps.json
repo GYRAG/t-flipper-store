@@ -465,6 +465,14 @@
       "author": "MassivDash",
       "description": "Track time across multiple tasks, exports to CSV.",
       "url": "https://github.com/MassivDash/flipper-tracker"
+    },
+    {
+      "id": "bt_trigger",
+      "dir": "bluetooth-trigger",
+      "category": "Bluetooth",
+      "author": "@Nem0oo",
+      "description": "Phone camera shutter over Bluetooth. Turn to set the interval, OK to shoot.",
+      "url": "https://github.com/Nem0oo/flipper-zero-bluetooth-trigger"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
