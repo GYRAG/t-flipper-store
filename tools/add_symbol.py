@@ -8,7 +8,7 @@ Usage:
     python3 tools/add_symbol.py --dry-run symbol1 symbol2
 
 Automatically determines the correct .address field:
-  - I_* icons:             (uint32_t)&I_name
+  - I_*/A_* icons:          (uint32_t)&I_name
   - message_* messages:    (uint32_t)&message_name
   - sequence_* sequences:  (uint32_t)&sequence_name
   - everything else:       (uint32_t)function_name
@@ -35,7 +35,7 @@ def elf_gnu_hash(s: str) -> int:
 
 def needs_address_of(name: str) -> bool:
     """Return True if the symbol is a global variable (needs & prefix)."""
-    return name.startswith("I_") or name.startswith("message_") or name.startswith("sequence_")
+    return name.startswith(("I_", "A_", "message_", "sequence_"))
 
 
 def format_entry(name: str, h: int) -> str:
