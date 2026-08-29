@@ -357,18 +357,20 @@ int32_t tictactoe_game_app(void* p) {
                     // single line (reading order, wrapping) instead of X/Y. Plain
                     // rotation (Up/Down) steps through every square like typing;
                     // Left/Right (hold-and-turn) does the same. idx = selY*3+selX.
+                    // NB: selX/selY are 1-BASED (1..3) with a clamp below, so the
+                    // linear index converts to/from 0..8 carefully.
                     case InputKeyDown:
                     case InputKeyRight: {
-                        int idx = (tictactoe_state->selY * 3 + tictactoe_state->selX + 1) % 9;
-                        tictactoe_state->selX = idx % 3;
-                        tictactoe_state->selY = idx / 3;
+                        int idx = ((tictactoe_state->selY - 1) * 3 + (tictactoe_state->selX - 1) + 1) % 9;
+                        tictactoe_state->selX = idx % 3 + 1;
+                        tictactoe_state->selY = idx / 3 + 1;
                         break;
                     }
                     case InputKeyUp:
                     case InputKeyLeft: {
-                        int idx = (tictactoe_state->selY * 3 + tictactoe_state->selX + 8) % 9;
-                        tictactoe_state->selX = idx % 3;
-                        tictactoe_state->selY = idx / 3;
+                        int idx = ((tictactoe_state->selY - 1) * 3 + (tictactoe_state->selX - 1) + 8) % 9;
+                        tictactoe_state->selX = idx % 3 + 1;
+                        tictactoe_state->selY = idx / 3 + 1;
                         break;
                     }
                     case InputKeyOk:
