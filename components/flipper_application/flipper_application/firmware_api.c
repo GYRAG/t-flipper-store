@@ -357,6 +357,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x070f1ab9, .address = (uint32_t)furi_event_loop_unsubscribe }, /* furi_event_loop_unsubscribe */
     { .hash = 0x0726391d, .address = (uint32_t)elements_button_center }, /* elements_button_center */
     { .hash = 0x074563d8, .address = (uint32_t)esp_log_write }, /* esp_log_write */
+    { .hash = 0x075786c3, .address = (uint32_t)&I_ButtonDown_7x4 }, /* I_ButtonDown_7x4 */
     { .hash = 0x07702a63, .address = (uint32_t)compress_icon_alloc }, /* compress_icon_alloc */
     { .hash = 0x0778b100, .address = (uint32_t)infrared_get_protocol_name }, /* infrared_get_protocol_name */
     { .hash = 0x0781e22e, .address = (uint32_t)furi_hal_infrared_async_tx_start }, /* furi_hal_infrared_async_tx_start */
@@ -368,6 +369,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x0911e126, .address = (uint32_t)furi_thread_set_signal_callback }, /* furi_thread_set_signal_callback */
     { .hash = 0x0913e1dd, .address = (uint32_t)stream_copy_full }, /* stream_copy_full */
     { .hash = 0x0922fe88, .address = (uint32_t)view_dispatcher_add_view }, /* view_dispatcher_add_view */
+    { .hash = 0x0939d78b, .address = (uint32_t)&sequence_set_blue_255 }, /* sequence_set_blue_255 */
     { .hash = 0x093be3cf, .address = (uint32_t)storage_common_remove }, /* storage_common_remove */
     { .hash = 0x093c3379, .address = (uint32_t)storage_common_rename }, /* storage_common_rename */
     { .hash = 0x095e34aa, .address = (uint32_t)furi_hal_subghz_rx }, /* furi_hal_subghz_rx */
@@ -550,6 +552,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x1d863265, .address = (uint32_t)simple_array_get_data }, /* simple_array_get_data */
     { .hash = 0x1d91dfbd, .address = (uint32_t)empty_screen_alloc }, /* empty_screen_alloc */
     { .hash = 0x1daf9a69, .address = (uint32_t)furi_thread_set_callback }, /* furi_thread_set_callback */
+    { .hash = 0x1e827bba, .address = (uint32_t)ble_profile_hid_mouse_move }, /* ble_profile_hid_mouse_move */
     { .hash = 0x1e84d649, .address = (uint32_t)mf_classic_set_block_read }, /* mf_classic_set_block_read */
     { .hash = 0x1f2c5a82, .address = (uint32_t)nfc_set_fdt_poll_fc }, /* nfc_set_fdt_poll_fc */
     { .hash = 0x1fba7776, .address = (uint32_t)submenu_change_item_label }, /* submenu_change_item_label */
@@ -605,6 +608,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x2860ea96, .address = (uint32_t)dialog_message_show_storage_error }, /* dialog_message_show_storage_error */
     { .hash = 0x28721e1e, .address = (uint32_t)furi_timer_set_thread_priority }, /* furi_timer_set_thread_priority */
     { .hash = 0x292f3238, .address = (uint32_t)dialog_ex_set_right_button_text }, /* dialog_ex_set_right_button_text */
+    { .hash = 0x29e03ee7, .address = (uint32_t)ble_profile_hid_consumer_key_release_all }, /* ble_profile_hid_consumer_key_release_all */
     { .hash = 0x2a5091ac, .address = (uint32_t)subghz_receiver_set_rx_callback }, /* subghz_receiver_set_rx_callback */
     { .hash = 0x2aaa426e, .address = (uint32_t)text_input_set_result_callback }, /* text_input_set_result_callback */
     { .hash = 0x2abe3c57, .address = (uint32_t)view_holder_attach_to_gui }, /* view_holder_attach_to_gui */
@@ -665,6 +669,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x370bfdd3, .address = (uint32_t)text_box_free }, /* text_box_free */
     { .hash = 0x3753d1e3, .address = (uint32_t)&message_display_backlight_on }, /* message_display_backlight_on */
     { .hash = 0x37d1f510, .address = (uint32_t)manchester_encoder_reset }, /* manchester_encoder_reset */
+    { .hash = 0x37e3f494, .address = (uint32_t)&sequence_blink_blue_10 }, /* sequence_blink_blue_10 */
     { .hash = 0x37e825d8, .address = (uint32_t)subghz_worker_set_overrun_callback }, /* subghz_worker_set_overrun_callback */
     { .hash = 0x3805a904, .address = (uint32_t)iso14443_4a_poller_send_block }, /* iso14443_4a_poller_send_block */
     { .hash = 0x38064b71, .address = (uint32_t)esp_restart }, /* esp_restart */
@@ -678,6 +683,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x39e05524, .address = (uint32_t)dialog_ex_set_icon }, /* dialog_ex_set_icon */
     { .hash = 0x39e66700, .address = (uint32_t)dialog_ex_set_text }, /* dialog_ex_set_text */
     { .hash = 0x39f5acd8, .address = (uint32_t)furi_hal_usb_set_config }, /* furi_hal_usb_set_config */
+    { .hash = 0x3a93e77b, .address = (uint32_t)ble_profile_hid_consumer_key_press }, /* ble_profile_hid_consumer_key_press */
     { .hash = 0x3af87667, .address = (uint32_t)canvas_clear }, /* canvas_clear */
     { .hash = 0x3b0aa073, .address = (uint32_t)widget_alloc }, /* widget_alloc */
     { .hash = 0x3b2ba133, .address = (uint32_t)subghz_devices_get_by_name }, /* subghz_devices_get_by_name */
@@ -810,6 +816,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x538016fe, .address = (uint32_t)&message_delay_25 }, /* message_delay_25 */
     { .hash = 0x5380175c, .address = (uint32_t)&message_delay_50 }, /* message_delay_50 */
     { .hash = 0x53a28b7f, .address = (uint32_t)furi_event_loop_alloc }, /* furi_event_loop_alloc */
+    { .hash = 0x53f6e9c4, .address = (uint32_t)ble_profile_hid_mouse_release }, /* ble_profile_hid_mouse_release */
     { .hash = 0x54803eb8, .address = (uint32_t)view_commit_model }, /* view_commit_model */
     { .hash = 0x54c62e2e, .address = (uint32_t)stream_cache_at_end }, /* stream_cache_at_end */
     { .hash = 0x54fd5631, .address = (uint32_t)subghz_protocol_blocks_crc4 }, /* subghz_protocol_blocks_crc4 */
@@ -872,6 +879,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x611d38e0, .address = (uint32_t)text_input_set_minimum_length }, /* text_input_set_minimum_length */
     { .hash = 0x613f9d29, .address = (uint32_t)subghz_protocol_blocks_reverse_key }, /* subghz_protocol_blocks_reverse_key */
     { .hash = 0x6191415d, .address = (uint32_t)pipe_alloc }, /* pipe_alloc */
+    { .hash = 0x619d2ae0, .address = (uint32_t)ble_profile_hid_kb_release_all }, /* ble_profile_hid_kb_release_all */
     { .hash = 0x61d29917, .address = (uint32_t)cli_registry_add_command_ex }, /* cli_registry_add_command_ex */
     { .hash = 0x622edde3, .address = (uint32_t)storage_file_write }, /* storage_file_write */
     { .hash = 0x628361f7, .address = (uint32_t)bit_lib_bytes_to_num_be }, /* bit_lib_bytes_to_num_be */
@@ -891,6 +899,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x653ccd66, .address = (uint32_t)flipper_format_file_open_append }, /* flipper_format_file_open_append */
     { .hash = 0x65a3753d, .address = (uint32_t)bit_buffer_copy_bytes }, /* bit_buffer_copy_bytes */
     { .hash = 0x65cfd524, .address = (uint32_t)esp_wifi_disconnect }, /* esp_wifi_disconnect */
+    { .hash = 0x65e0c595, .address = (uint32_t)&I_Ble_disconnected_15x15 }, /* I_Ble_disconnected_15x15 */
     { .hash = 0x66236b4e, .address = (uint32_t)view_port_get_orientation }, /* view_port_get_orientation */
     { .hash = 0x662589fc, .address = (uint32_t)__lshrdi3 }, /* __lshrdi3 */
     { .hash = 0x665323b8, .address = (uint32_t)mjs_destroy }, /* mjs_destroy */
@@ -908,6 +917,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x674ad79c, .address = (uint32_t)furi_timer_flush }, /* furi_timer_flush */
     { .hash = 0x677d5c70, .address = (uint32_t)canvas_draw_xbm_ex }, /* canvas_draw_xbm_ex */
     { .hash = 0x678ee68d, .address = (uint32_t)loading_alloc }, /* loading_alloc */
+    { .hash = 0x67a23dc1, .address = (uint32_t)&sequence_blink_start_blue }, /* sequence_blink_start_blue */
     { .hash = 0x67af1453, .address = (uint32_t)furi_string_reset }, /* furi_string_reset */
     { .hash = 0x67b1132e, .address = (uint32_t)furi_string_right }, /* furi_string_right */
     { .hash = 0x67c13049, .address = (uint32_t)furi_string_set_n }, /* furi_string_set_n */
@@ -1067,6 +1077,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x83838160, .address = (uint32_t)variable_item_list_get_selected_item_index }, /* variable_item_list_get_selected_item_index */
     { .hash = 0x83d1579a, .address = (uint32_t)view_dispatcher_run }, /* view_dispatcher_run */
     { .hash = 0x83d61ca0, .address = (uint32_t)furi_string_cat_str }, /* furi_string_cat_str */
+    { .hash = 0x83f82d54, .address = (uint32_t)&I_dir_10px }, /* I_dir_10px */
     { .hash = 0x84023d68, .address = (uint32_t)_ctype_ }, /* _ctype_ */
     { .hash = 0x8407dc7e, .address = (uint32_t)view_set_input_mode }, /* view_set_input_mode */
     { .hash = 0x8426fee9, .address = (uint32_t)&message_blink_set_color_blue }, /* message_blink_set_color_blue */
@@ -1312,6 +1323,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xab19222f, .address = (uint32_t)plugin_manager_free }, /* plugin_manager_free */
     { .hash = 0xab26b7f2, .address = (uint32_t)subghz_worker_free }, /* subghz_worker_free */
     { .hash = 0xab2de2b6, .address = (uint32_t)subghz_worker_stop }, /* subghz_worker_stop */
+    { .hash = 0xab43dc6f, .address = (uint32_t)ble_profile_hid_consumer_key_release }, /* ble_profile_hid_consumer_key_release */
     { .hash = 0xac055b11, .address = (uint32_t)i2s_channel_enable }, /* i2s_channel_enable */
     { .hash = 0xac46f417, .address = (uint32_t)&sequence_display_backlight_on }, /* sequence_display_backlight_on */
     { .hash = 0xac513fd0, .address = (uint32_t)view_holder_send_to_front }, /* view_holder_send_to_front */
@@ -1563,6 +1575,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xd551b8be, .address = (uint32_t)i2s_channel_disable }, /* i2s_channel_disable */
     { .hash = 0xd5adbc28, .address = (uint32_t)flipper_format_file_alloc }, /* flipper_format_file_alloc */
     { .hash = 0xd5d1fa73, .address = (uint32_t)flipper_format_file_close }, /* flipper_format_file_close */
+    { .hash = 0xd6342752, .address = (uint32_t)ble_profile_hid_mouse_scroll }, /* ble_profile_hid_mouse_scroll */
     { .hash = 0xd636700d, .address = (uint32_t)furi_hal_nfc_field_detect_start }, /* furi_hal_nfc_field_detect_start */
     { .hash = 0xd63c6b71, .address = (uint32_t)button_panel_free }, /* button_panel_free */
     { .hash = 0xd6a9f1d0, .address = (uint32_t)view_set_exit_callback }, /* view_set_exit_callback */
@@ -1573,6 +1586,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xd75c81a1, .address = (uint32_t)plugin_manager_get_ep }, /* plugin_manager_get_ep */
     { .hash = 0xd78d168d, .address = (uint32_t)subghz_protocol_decoder_base_get_string }, /* subghz_protocol_decoder_base_get_string */
     { .hash = 0xd7b5f6fa, .address = (uint32_t)submenu_set_orientation }, /* submenu_set_orientation */
+    { .hash = 0xd7e45695, .address = (uint32_t)&I_Ble_connected_15x15 }, /* I_Ble_connected_15x15 */
     { .hash = 0xd83f118e, .address = (uint32_t)mjs_mk_number }, /* mjs_mk_number */
     { .hash = 0xd85bd689, .address = (uint32_t)mjs_nargs }, /* mjs_nargs */
     { .hash = 0xd875bb89, .address = (uint32_t)lwip_socket }, /* lwip_socket */
@@ -1662,6 +1676,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xe5008d82, .address = (uint32_t)furi_message_queue_get }, /* furi_message_queue_get */
     { .hash = 0xe500b5db, .address = (uint32_t)furi_message_queue_put }, /* furi_message_queue_put */
     { .hash = 0xe50f3ae0, .address = (uint32_t)flipper_format_insert_or_update_bool }, /* flipper_format_insert_or_update_bool */
+    { .hash = 0xe553eebc, .address = (uint32_t)ble_profile_hid_mouse_release_all }, /* ble_profile_hid_mouse_release_all */
     { .hash = 0xe574018d, .address = (uint32_t)&I_KeySaveSelected_24x11 }, /* I_KeySaveSelected_24x11 */
     { .hash = 0xe58507da, .address = (uint32_t)esp_wifi_set_storage }, /* esp_wifi_set_storage */
     { .hash = 0xe5b27f65, .address = (uint32_t)subghz_block_generic_serialize }, /* subghz_block_generic_serialize */
@@ -1672,6 +1687,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xe6d795e7, .address = (uint32_t)furi_thread_list_get_isr_time }, /* furi_thread_list_get_isr_time */
     { .hash = 0xe776c415, .address = (uint32_t)i2s_channel_write }, /* i2s_channel_write */
     { .hash = 0xe7914ee4, .address = (uint32_t)mjs_get_string }, /* mjs_get_string */
+    { .hash = 0xe7bc80b0, .address = (uint32_t)&I_ButtonUp_7x4 }, /* I_ButtonUp_7x4 */
     { .hash = 0xe7dfedba, .address = (uint32_t)strint_to_int32 }, /* strint_to_int32 */
     { .hash = 0xe7dfee1f, .address = (uint32_t)strint_to_int64 }, /* strint_to_int64 */
     { .hash = 0xe7ff8ccf, .address = (uint32_t)mbedtls_des3_set2key_dec }, /* mbedtls_des3_set2key_dec */
@@ -1695,6 +1711,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xeb3537f4, .address = (uint32_t)canvas_draw_dot }, /* canvas_draw_dot */
     { .hash = 0xeb357866, .address = (uint32_t)canvas_draw_str }, /* canvas_draw_str */
     { .hash = 0xeb358b54, .address = (uint32_t)canvas_draw_xbm }, /* canvas_draw_xbm */
+    { .hash = 0xeb79a989, .address = (uint32_t)&I_ButtonRight_4x7 }, /* I_ButtonRight_4x7 */
     { .hash = 0xec3e8481, .address = (uint32_t)storage_common_exists }, /* storage_common_exists */
     { .hash = 0xec6856b3, .address = (uint32_t)iso14443_3a_poller_send_standard_frame }, /* iso14443_3a_poller_send_standard_frame */
     { .hash = 0xec68dc5e, .address = (uint32_t)furi_log_set_level }, /* furi_log_set_level */
@@ -1722,6 +1739,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xee758416, .address = (uint32_t)esp_netif_get_handle_from_ifkey }, /* esp_netif_get_handle_from_ifkey */
     { .hash = 0xee84d329, .address = (uint32_t)menu_get_style }, /* menu_get_style */
     { .hash = 0xeed66623, .address = (uint32_t)heap_caps_get_free_size }, /* heap_caps_get_free_size */
+    { .hash = 0xef099b90, .address = (uint32_t)ble_profile_hid_mouse_press }, /* ble_profile_hid_mouse_press */
     { .hash = 0xef195c40, .address = (uint32_t)hex_char_to_uint8 }, /* hex_char_to_uint8 */
     { .hash = 0xef1a0cd3, .address = (uint32_t)text_box_set_font }, /* text_box_set_font */
     { .hash = 0xef2190e1, .address = (uint32_t)text_box_set_text }, /* text_box_set_text */
