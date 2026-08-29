@@ -169,6 +169,142 @@
       "category": "NFC",
       "author": "Sor3nt port",
       "description": "Write UIDs to magic (gen1/gen2) NFC tags."
+    },
+    {
+      "id": "arkanoid",
+      "dir": "arkanoid",
+      "category": "Games",
+      "author": "@xMasterX & @gotnull",
+      "description": "Arkanoid Game",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/base_pack/arkanoid"
+    },
+    {
+      "id": "flappy_bird",
+      "dir": "flappy_bird",
+      "category": "Games",
+      "author": "@DroomOne & @xMasterX",
+      "description": "Flappy Bird Game",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/base_pack/flappy_bird"
+    },
+    {
+      "id": "game_2048",
+      "dir": "game_2048",
+      "category": "Games",
+      "author": "@eugene-kirzhanov",
+      "description": "Play the port of the 2048 game on Flipper Zero.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/base_pack/game_2048"
+    },
+    {
+      "id": "tictactoe",
+      "dir": "tictactoe_game",
+      "category": "Games",
+      "author": "@xMasterX & @gotnull",
+      "description": "Tic Tac Toe game, for 2 players, play on one device",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/base_pack/tictactoe_game"
+    },
+    {
+      "id": "zombiez",
+      "dir": "zombiez",
+      "category": "Games",
+      "author": "@DevMilanIan & @xMasterX, (original By @Dooskington)",
+      "description": "Defend your walls from the zombies",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/base_pack/zombiez"
+    },
+    {
+      "id": "yatzee",
+      "dir": "flipperzero-yatzee-main",
+      "category": "Games",
+      "author": "@emfleak",
+      "description": "Yahtzee game",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/flipperzero-yatzee-main"
+    },
+    {
+      "id": "reaction",
+      "dir": "fz-reaction-game",
+      "category": "Games",
+      "author": "@Milk-Cool",
+      "description": "A simple reaction test game",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/fz-reaction-game"
+    },
+    {
+      "id": "mandelbrotset",
+      "dir": "mandelbrot",
+      "category": "Games",
+      "author": "@Possibly-Matt",
+      "description": "The Mandelbrot set is the set of all so-called (complex) numbers th...",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/mandelbrot"
+    },
+    {
+      "id": "montyhall",
+      "dir": "montyhall",
+      "category": "Games",
+      "author": "@DevMilanIan",
+      "description": "Monty Hall asks you to guess which closed door a prize is behind.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/montyhall"
+    },
+    {
+      "id": "reversi",
+      "dir": "reversi",
+      "category": "Games",
+      "author": "@dimat",
+      "description": "Reversi game, the game controls should be intuitive. Longs press on...",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/reversi"
+    },
+    {
+      "id": "t_rex_runner",
+      "dir": "t-rex-runner",
+      "category": "Games",
+      "author": "@Rrycbarm",
+      "description": "Play the port of the Chrome browser T-Rex game on your Flipper Zero.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/t-rex-runner"
+    },
+    {
+      "id": "videopoker",
+      "dir": "videopoker",
+      "category": "Games",
+      "author": "@PixlEmly",
+      "description": "Video poker is a casino game based on five-card draw poker",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/apps_source_code/videopoker"
+    },
+    {
+      "id": "paper_plane",
+      "dir": "flipper_plane",
+      "category": "Games",
+      "author": "@Larry-the-Pig",
+      "description": "Guide a paper plane through obstacles to get the highest score.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/flipper_plane"
+    },
+    {
+      "id": "secret_toggle",
+      "dir": "secret_toggle",
+      "category": "Games",
+      "author": "@nostrumuva",
+      "description": "A game that toggles squares.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/secret_toggle"
+    },
+    {
+      "id": "sudoku",
+      "dir": "sudoku",
+      "category": "Games",
+      "author": "@profelis",
+      "description": "Sudoku game",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/sudoku"
+    },
+    {
+      "id": "racso_ultimate_tic_tac_toe",
+      "dir": "ultimate_tic_tac_toe",
+      "category": "Games",
+      "author": "Racso",
+      "description": "Ultimate Tic-Tac-Toe: play on a big board, where each square is a T...",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/ultimate_tic_tac_toe"
+    },
+    {
+      "id": "racso_zero",
+      "dir": "zero",
+      "category": "Games",
+      "author": "Racso",
+      "description": "ZERO! Get rid of all your cards before your opponents do!",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/zero"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
