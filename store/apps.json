@@ -265,6 +265,206 @@
       "author": "Racso",
       "description": "ZERO! Get rid of all your cards before your opponents do!",
       "url": "https://github.com/xMasterX/all-the-plugins/tree/dev/non_catalog_apps/zero"
+    },
+    {
+      "id": "counter",
+      "dir": "counter",
+      "category": "Tools",
+      "author": "@Krulknul",
+      "description": "Tally counter. Turn to count, OK resets.",
+      "url": "https://github.com/Krulknul/dolphin-counter"
+    },
+    {
+      "id": "multi_counter",
+      "dir": "multi_counter",
+      "category": "Tools",
+      "author": "@JadePossible & Roro",
+      "description": "Four independent counters for tabletop games.",
+      "url": "https://github.com/JadePossible/Flipper-Multi-Counter"
+    },
+    {
+      "id": "analog_clock",
+      "dir": "flipper_analog_clock",
+      "category": "Tools",
+      "author": "@scrolltex",
+      "description": "Analog clock face.",
+      "url": "https://github.com/scrolltex/flipper_analog_clock"
+    },
+    {
+      "id": "cntdown_tim",
+      "dir": "fpz_cntdown_timer-main",
+      "category": "Tools",
+      "author": "@0w0mewo",
+      "description": "Count-down timer with an alarm.",
+      "url": "https://github.com/0w0mewo/fpz_cntdown_timer"
+    },
+    {
+      "id": "pomodoro_timer",
+      "dir": "pomodoro",
+      "category": "Tools",
+      "author": "@sbrin",
+      "description": "Pomodoro work/break timer.",
+      "url": "https://github.com/sbrin/flipperzero_pomodoro"
+    },
+    {
+      "id": "flipp_pomodoro",
+      "dir": "flipp_pomodoro",
+      "category": "Tools",
+      "author": "@Th3Un1q3 · ported by GYRAG",
+      "description": "Pomodoro timer with stats. Turn to skip a stage or open settings.",
+      "url": "https://github.com/Th3Un1q3/flipp_pomodoro"
+    },
+    {
+      "id": "tone_gen",
+      "dir": "tone_gen",
+      "category": "Tools",
+      "author": "Gerald McAlister",
+      "description": "Audio tone generator - dial in a frequency and play it.",
+      "url": "https://github.com/GEMISIS/tone_gen"
+    },
+    {
+      "id": "text_viewer",
+      "dir": "text_viewer",
+      "category": "Tools",
+      "author": "@WillyJL",
+      "description": "Plain-text file viewer.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/base_pack/text_viewer"
+    },
+    {
+      "id": "hex_viewer",
+      "dir": "hex_viewer",
+      "category": "Tools",
+      "author": "@QtRoS",
+      "description": "View any file as hex. Turn to scroll; hold OK and turn to switch hex/text.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/base_pack/hex_viewer"
+    },
+    {
+      "id": "hex_editor",
+      "dir": "hex_editor",
+      "category": "Tools",
+      "author": "@dunaevai135 · ported by GYRAG",
+      "description": "Edit files byte by byte. Turn to pick a line, OK to edit, turn to set the value.",
+      "url": "https://github.com/dunaevai135/flipper-zero-hex_editor"
+    },
+    {
+      "id": "calculator",
+      "dir": "calculator",
+      "category": "Tools",
+      "author": "@n-o-T-I-n-s-a-n-e · ported by GYRAG",
+      "description": "Expression calculator with powers and roots. Turn walks the whole keypad.",
+      "url": "https://github.com/n-o-T-I-n-s-a-n-e"
+    },
+    {
+      "id": "programmercalc",
+      "dir": "prog_calculator",
+      "category": "Tools",
+      "author": "@armixz · ported by GYRAG",
+      "description": "Programmer's calculator - hex, dec, oct, bin. Turn walks the whole keypad.",
+      "url": "https://github.com/armixz/Flipper-Zero-Programmer-Calculator"
+    },
+    {
+      "id": "multi_converter",
+      "dir": "multi_converter",
+      "category": "Tools",
+      "author": "@theisolinearchip · ported by GYRAG",
+      "description": "Unit converter - length, mass, temperature and more.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/base_pack/multi_converter"
+    },
+    {
+      "id": "caesar_cipher",
+      "dir": "caesarcipher",
+      "category": "Tools",
+      "author": "@panki27 · ported by GYRAG",
+      "description": "Encrypt and decrypt text with a Caesar shift.",
+      "url": "https://github.com/panki27/caesar-cipher"
+    },
+    {
+      "id": "passgen",
+      "dir": "flipper_passgen",
+      "category": "Tools",
+      "author": "@anakod & @henrygab · ported by GYRAG",
+      "description": "Password generator. Turn to set the value, hold OK to swap length/type.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/apps_source_code/flipper_passgen"
+    },
+    {
+      "id": "nickname_generator",
+      "dir": "name-gen",
+      "category": "Tools",
+      "author": "@xMasterX · ported by GYRAG",
+      "description": "Random nickname generator. Turn to change category, OK for a new name.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/name-gen"
+    },
+    {
+      "id": "sd_info",
+      "dir": "sd_info",
+      "category": "Tools",
+      "author": "sergo · ported by GYRAG",
+      "description": "SD card capacity, free space and filesystem info. Turn to page.",
+      "url": "https://github.com/Sladkisnovraper/SD-Info-For-Flipper-Zero"
+    },
+    {
+      "id": "calendar",
+      "dir": "calendar",
+      "category": "Tools",
+      "author": "@xMasterX · ported by GYRAG",
+      "description": "Month calendar. Turn walks the month and year pickers.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/calendar"
+    },
+    {
+      "id": "qrcode",
+      "dir": "flipperzero-qrcode",
+      "category": "Tools",
+      "author": "Bob Matcuk",
+      "description": "Render QR codes. Needs .qrcode files on the SD card under apps_data/qrcode.",
+      "url": "https://github.com/bmatcuk/flipperzero-qrcode"
+    },
+    {
+      "id": "barcode_app",
+      "dir": "barcode_gen",
+      "category": "Tools",
+      "author": "@Kingal1337 · ported by GYRAG",
+      "description": "Display EAN, UPC and Code 39/128 barcodes. Turn walks the whole keyboard.",
+      "url": "https://github.com/Kingal1337/flipper-barcode-generator"
+    },
+    {
+      "id": "vin_decoder",
+      "dir": "vin_decoder",
+      "category": "Tools",
+      "author": "@evillero",
+      "description": "Decode a vehicle identification number.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/vin_decoder"
+    },
+    {
+      "id": "fordradiocode",
+      "dir": "fz_fordradiocodes",
+      "category": "Tools",
+      "author": "DavidB",
+      "description": "Ford M/V radio unlock codes. Needs fordradiocode.bin in the SD app data folder.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/fz_fordradiocodes"
+    },
+    {
+      "id": "key_copier",
+      "dir": "key_copier",
+      "category": "Tools",
+      "author": "Torron",
+      "description": "Record and compare physical key bitting depths.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/key_copier"
+    },
+    {
+      "id": "flipnote",
+      "dir": "flipnote",
+      "category": "Tools",
+      "author": "morty517 · ported by GYRAG",
+      "description": "On-device text editor. Turn walks the whole keyboard.",
+      "url": "https://github.com/morty517/flipnote"
+    },
+    {
+      "id": "trackerflipx",
+      "dir": "flipper_task_tracker",
+      "category": "Tools",
+      "author": "MassivDash",
+      "description": "Track time across multiple tasks, exports to CSV.",
+      "url": "https://github.com/MassivDash/flipper-tracker"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
