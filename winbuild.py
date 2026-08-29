@@ -26,6 +26,7 @@ Env vars (overridable):
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -49,6 +50,43 @@ BOARDS = {
 }
 
 REPO_ROOT = Path(__file__).resolve().parent
+
+# Board key -> the release slug the store page fetches firmware from. Only the
+# boards the store actually hosts appear here; must match the paths CI writes
+# in .github/workflows/build.yml (release/<slug>/latest/).
+STORE_RELEASE_SLUG = {
+    "t_embed": "t-embed",
+    "waveshare_c6": "waveshare_c6_1.9",
+    "waveshare_c6_1.9": "waveshare_c6_1.9",
+}
+
+
+def _sync_local_store(board, build_dir):
+    """Mirror the freshly built firmware into store/release/<slug>/latest/ so the
+    LOCAL store page (store/index.html served from disk) flashes the current
+    build instead of whatever CI last published. CI does this for the hosted
+    site; this keeps the on-disk copy in step. Best-effort: never fail a build
+    over it."""
+    slug = STORE_RELEASE_SLUG.get(board)
+    if not slug:
+        return
+    src = REPO_ROOT / build_dir
+    dst = REPO_ROOT / "store" / "release" / slug / "latest"
+    files = [
+        (src / "furi_esp32.bin", dst / "furi_esp32.bin"),
+        (src / "bootloader" / "bootloader.bin", dst / "bootloader.bin"),
+        (src / "partition_table" / "partition-table.bin", dst / "partition-table.bin"),
+    ]
+    if not all(f.exists() for f, _ in files):
+        print("[store] build artifacts missing, skipped local store sync")
+        return
+    try:
+        dst.mkdir(parents=True, exist_ok=True)
+        for f, d in files:
+            shutil.copy2(f, d)
+        print(f"[store] refreshed store/release/{slug}/latest/ from {build_dir}")
+    except OSError as e:
+        print(f"[store] local store sync skipped: {e}")
 
 
 def _board_cmake_args(flipper_board: str, build_dir: str) -> str:
@@ -116,7 +154,10 @@ def cmd_build(args):
     rc = run_with_idf_env(esp_idf_dir, f"{common} set-target {target}", extra)
     if rc != 0:
         return rc
-    return run_with_idf_env(esp_idf_dir, f"{common} reconfigure build", extra)
+    rc = run_with_idf_env(esp_idf_dir, f"{common} reconfigure build", extra)
+    if rc == 0:
+        _sync_local_store(args.board, build_dir)
+    return rc
 
 
 def cmd_flash(args):
