@@ -196,38 +196,19 @@ static void flappy_game_render_callback(Canvas* const canvas, void* ctx) {
         for(int i = 0; i < FLAPPY_PILAR_MAX; i++) {
             const PILAR* pilar = &game_state->pilars[i];
             if(pilar != NULL && pilar->visible == 1) {
-                canvas_draw_frame(
+                // Solid filled bars. The original drew three overlapping 1px
+                // outline frames (canvas_draw_frame) offset by +1/+2 to fake a
+                // thick pillar, which left the interior hollow with the edge
+                // lines showing through — the "scanlines" on the obstacles. One
+                // canvas_draw_box each is solid and artifact-free.
+                canvas_draw_box(
                     canvas, pilar->point.x, pilar->point.y, FLAPPY_GAB_WIDTH, pilar->height);
 
-                canvas_draw_frame(
-                    canvas, pilar->point.x + 1, pilar->point.y, FLAPPY_GAB_WIDTH, pilar->height);
-
-                canvas_draw_frame(
-                    canvas,
-                    pilar->point.x + 2,
-                    pilar->point.y,
-                    FLAPPY_GAB_WIDTH - 1,
-                    pilar->height);
-
-                canvas_draw_frame(
+                canvas_draw_box(
                     canvas,
                     pilar->point.x,
                     pilar->point.y + pilar->height + FLAPPY_GAB_HEIGHT,
                     FLAPPY_GAB_WIDTH,
-                    FLIPPER_LCD_HEIGHT - pilar->height - FLAPPY_GAB_HEIGHT);
-
-                canvas_draw_frame(
-                    canvas,
-                    pilar->point.x + 1,
-                    pilar->point.y + pilar->height + FLAPPY_GAB_HEIGHT,
-                    FLAPPY_GAB_WIDTH - 1,
-                    FLIPPER_LCD_HEIGHT - pilar->height - FLAPPY_GAB_HEIGHT);
-
-                canvas_draw_frame(
-                    canvas,
-                    pilar->point.x + 2,
-                    pilar->point.y + pilar->height + FLAPPY_GAB_HEIGHT,
-                    FLAPPY_GAB_WIDTH - 1,
                     FLIPPER_LCD_HEIGHT - pilar->height - FLAPPY_GAB_HEIGHT);
             }
         }
