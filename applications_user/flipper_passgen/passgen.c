@@ -68,6 +68,9 @@ typedef struct {
     char password[PASSGEN_MAX_LENGTH + 1];
     int length; // must be <= PASSGEN_MAX_LENGTH
     int level;
+    /* T-Embed: length and type are two independent axes, but a dial only has
+     * one. Track which one a turn adjusts; long-press Ok swaps them. */
+    int field; // 0 = length, 1 = type
 } PassGen;
 
 void state_free(PassGen* app) {
@@ -111,12 +114,17 @@ static void render_callback(Canvas* canvas, void* ctx) {
     canvas_draw_icon(canvas, 96, 52, &I_Pin_back_arrow_10x8);
     canvas_draw_str(canvas, 108, 60, "Exit");
 
-    canvas_draw_icon(canvas, 54, 52, &I_Vertical_arrow_7x9);
+    /* The stock screen drew a vertical arrow by the type and a horizontal one
+     * by the length - D-pad hints for a device with no D-pad. Point at whichever
+     * field the dial is driving instead, and say that Ok holds swap them. */
     canvas_draw_str(canvas, 64, 60, AlphabetLevelNames[app->level]);
+    if(app->field == 1) canvas_draw_str(canvas, 56, 60, ">");
 
     snprintf(str_length, sizeof(str_length), "Len: %d", app->length);
-    canvas_draw_icon(canvas, 4, 53, &I_Horizontal_arrow_9x7);
     canvas_draw_str(canvas, 15, 60, str_length);
+    if(app->field == 0) canvas_draw_str(canvas, 7, 60, ">");
+
+    canvas_draw_str(canvas, 2, 48, "hold OK: length/type");
 
     furi_mutex_release(app->mutex);
 }
@@ -218,22 +226,28 @@ int32_t passgenapp(void) {
                     furi_mutex_release(app->mutex);
                     state_free(app);
                     return 0;
+                /* A turn steps the selected field. Left/Right still work for
+                 * anyone using the hold-and-turn modifier, and keep their
+                 * original meaning: length. */
                 case InputKeyDown:
-                    if(app->level > 0) {
-                        app->level--;
-                        build_alphabet(app);
-                        update_password(app, false);
-                    } else
-                        notification_message(app->notify, &sequence_blink_red_100);
+                case InputKeyUp: {
+                    bool up = (input.key == InputKeyUp);
+                    if(app->field == 1) {
+                        if(up ? (app->level < AlphabetLevelsCount - 1) : (app->level > 0)) {
+                            app->level += up ? 1 : -1;
+                            build_alphabet(app);
+                            update_password(app, false);
+                        } else
+                            notification_message(app->notify, &sequence_blink_red_100);
+                    } else {
+                        if(up ? (app->length < PASSGEN_MAX_LENGTH) : (app->length > 1)) {
+                            app->length += up ? 1 : -1;
+                            update_password(app, false);
+                        } else
+                            notification_message(app->notify, &sequence_blink_red_100);
+                    }
                     break;
-                case InputKeyUp:
-                    if(app->level < AlphabetLevelsCount - 1) {
-                        app->level++;
-                        build_alphabet(app);
-                        update_password(app, false);
-                    } else
-                        notification_message(app->notify, &sequence_blink_red_100);
-                    break;
+                }
                 case InputKeyLeft:
                     if(app->length > 1) {
                         app->length--;
@@ -254,6 +268,9 @@ int32_t passgenapp(void) {
                 default:
                     break;
                 }
+            } else if(input.type == InputTypeLong && input.key == InputKeyOk) {
+                app->field ^= 1;
+                view_port_update(app->view_port);
             }
             furi_mutex_release(app->mutex);
         }
