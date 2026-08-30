@@ -116,7 +116,7 @@
     </div>
 
     <div id="dl-steps">
-      <p class="flash-stat" style="margin:0 0 4px"><b>2. Put it in download mode</b></p>
+      <p class="flash-stat" style="margin:0 0 4px"><b>2. Connect the board</b></p>
       <ol class="steps" id="dl-list"></ol>
     </div>
 
@@ -281,16 +281,15 @@ function showConnDialog(ok){
   const boot = !ok && connectIssue==="bootloader";
   document.getElementById("conn-head").classList.toggle("err",!ok);
   document.getElementById("conn-title").textContent =
-    ok ? "Connected" : boot ? "Board Is In Flashing Mode" : "Could Not Connect";
+    ok ? "Connected" : boot ? "Firmware Isn't Running" : "Could Not Connect";
   document.getElementById("conn-msg").textContent =
     ok   ? "Your T-Embed is ready. Press Install on any app and it lands in /ext/apps/ on the SD card."
-  : boot ? "This board is sitting in download mode — the mode used to flash firmware. Apps can't be installed from there, because the firmware isn't running. To fix it:"
+  : boot ? "The board is sitting in its ROM bootloader, so the firmware isn't running and apps can't be installed. Just reboot it:"
          : "The browser could not start a session with the device. Usually one of these:";
   const steps=document.getElementById("conn-steps");
   steps.hidden = ok;
   if(!ok) steps.innerHTML = (boot ? [
-    "Power the board <b>off</b>.",
-    "Power it back <b>on</b> — this time <b>without</b> holding the encoder button.",
+    "Press the <b>RESET</b> button to reboot into the firmware.",
     "Wait for the normal screen, then hold <b>Back</b> and turn on <b>qFlipper</b>.",
     "Press <b>Connect T&#8209;Embed</b> again.",
   ] : [
@@ -314,6 +313,10 @@ async function closePort(){
   try{ await port?.close();    }catch(_){}
   port=null; writer=null; reader=null; rxBuf=new Uint8Array(0);
 }
+// The esptool-js flasher lives in a separate module script and can't reach
+// `port`. Expose a release so it can free the RPC-held port before it flashes,
+// and reuse the already-authorized port instead of prompting for one again.
+window.storeReleasePort = closePort;
 
 function u8concat(a,b){const c=new Uint8Array(a.length+b.length);c.set(a);c.set(b,a.length);return c;}
 function varint(n){const o=[];n=n>>>0;while(n>0x7f){o.push((n&0x7f)|0x80);n>>>=7;}o.push(n&0x7f);return Uint8Array.from(o);}
@@ -396,10 +399,10 @@ async function connect(){
     await new Promise(r=>setTimeout(r,600));
 
     // "ESP-ROM:esp32s3-..." is the ROM bootloader banner: the board came up in
-    // download mode (the state used for flashing) instead of booting the
-    // firmware. There is no CLI and no RPC there, so an install would stream
-    // the whole .fap into nothing and only fail on the read timeout. Catch it
-    // here and say so, rather than reporting a healthy connection.
+    // its ROM bootloader instead of booting the firmware (e.g. after an
+    // interrupted flash). There is no CLI and no RPC there, so an install would
+    // stream the whole .fap into nothing and only fail on the read timeout.
+    // Catch it here and say so, rather than reporting a healthy connection.
     const rx=new TextDecoder().decode(rxBuf);
     if(/ESP-ROM:|waiting for download|DOWNLOAD\(/i.test(rx)){
       connectIssue="bootloader";
@@ -617,25 +620,12 @@ const BOARDS = {
       { path: 'release/t-embed/latest/partition-table.bin', offset: 0x8000 },
       { path: 'release/t-embed/latest/furi_esp32.bin',      offset: 0x10000 },
     ],
-    // The S3's native USB CDC will not auto-reset into the ROM bootloader, so
-    // this has to be done by hand — the single biggest first-timer failure.
+    // The S3's native USB can always be flashed over — no button combo or
+    // "download mode" needed. esptool-js resets it into the ROM bootloader on
+    // its own. The only snag is if the port is busy talking to qFlipper.
     steps: [
-      'Power the board <b>off</b>.',
-      'Hold the <b>encoder button</b> in (it doubles as BOOT).',
-      'Power it <b>on</b> while still holding, then release.',
-      'The screen stays <b>dark</b> — that is correct, it means download mode.',
-    ],
-  },
-  'waveshare-c6': {
-    name: 'Waveshare ESP32-C6-LCD-1.9', chip: 'ESP32-C6', flashSize: '8MB',
-    parts: [
-      { path: 'release/waveshare_c6_1.9/latest/bootloader.bin',      offset: 0x0 },
-      { path: 'release/waveshare_c6_1.9/latest/partition-table.bin', offset: 0x8000 },
-      { path: 'release/waveshare_c6_1.9/latest/furi_esp32.bin',      offset: 0x10000 },
-    ],
-    steps: [
-      'Hold the <b>BOOT</b> button.',
-      'Tap <b>RESET</b> while still holding BOOT, then release.',
+      'Plug the board into USB — it can always be flashed, no button combo needed.',
+      'If it is currently paired with qFlipper (or flashing will not start), press <b>RESET</b> once, then flash.',
     ],
   },
 };
@@ -672,7 +662,13 @@ function pick(key){
   setErr(null); setStat('');
 }
 
-$('flash-open').onclick = () => { renderBoards(); dlg.showModal(); };
+$('flash-open').onclick = () => {
+  renderBoards();
+  // Only one board — pick it automatically so there's nothing to click here.
+  const keys = Object.keys(BOARDS);
+  if(keys.length === 1) pick(keys[0]);
+  dlg.showModal();
+};
 $('flash-close').onclick = () => { if(!busy) dlg.close(); };
 // Don't let Esc yank the dialog away mid-write and leave a half-flashed board.
 dlg.addEventListener('cancel', e => { if(busy) e.preventDefault(); });
@@ -690,8 +686,22 @@ $('flash-go').onclick = async () => {
   setErr(null);
 
   try{
-    setStat('Waiting for you to pick the serial port…');
-    const p = await navigator.serial.requestPort();
+    // If "Connect T-Embed" already opened the port for RPC, release it first —
+    // esptool needs exclusive access and the two can't hold it at once.
+    if(window.storeReleasePort){ try{ await window.storeReleasePort(); }catch(_){} }
+
+    // Reuse the port the browser already authorized (from Connect, or a previous
+    // flash) instead of prompting again. Only ask if none is remembered, or if
+    // several are and we can't tell which is the board.
+    let p = null;
+    try{
+      const granted = await navigator.serial.getPorts();
+      if(granted.length === 1) p = granted[0];
+    }catch(_){}
+    if(!p){
+      setStat('Waiting for you to pick the serial port…');
+      p = await navigator.serial.requestPort();
+    }
     transport = new Transport(p, true);
 
     const esploader = new ESPLoader({
@@ -743,7 +753,7 @@ $('flash-go').onclick = async () => {
     $('flash-go').textContent = 'Flash Again';
   }catch(e){
     console.error(e);
-    setErr('Flash failed: ' + e.message + ' — check the board is in download mode, then try again.');
+    setErr('Flash failed: ' + e.message + ' — press RESET on the board (or unplug qFlipper), then try again.');
     setStat('');
     log('flash failed: ' + e.message,'e');
     $('flash-go').textContent = 'Connect And Flash';

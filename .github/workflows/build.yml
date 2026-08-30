@@ -28,12 +28,6 @@ jobs:
             artifact_name: flipper-lilygo-t-embed-cc1101
             chip: esp32s3
             flash_size: 16MB
-          - name: waveshare_c6_1.9
-            script_key: waveshare_c6
-            build_dir: build_waveshare_c6
-            artifact_name: flipper-waveshare-c6-1.9
-            chip: esp32c6
-            flash_size: 8MB
 
     steps:
       - name: Checkout code
@@ -222,9 +216,8 @@ jobs:
           set -eu
           SITE=_site
           T=artifacts/flipper-lilygo-t-embed-cc1101
-          W=artifacts/flipper-waveshare-c6-1.9
 
-          mkdir -p "$SITE/release/t-embed/latest" "$SITE/release/waveshare_c6_1.9/latest"
+          mkdir -p "$SITE/release/t-embed/latest"
 
           # The store page IS the site: it flashes firmware AND installs apps.
           # It lives at the root so catalog.json, faps/ and release/ are siblings.
@@ -244,10 +237,6 @@ jobs:
           cp "$T/furi_esp32.bin"                      "$SITE/release/t-embed/latest/furi_esp32.bin"
           cp "$T/bootloader/bootloader.bin"           "$SITE/release/t-embed/latest/bootloader.bin"
           cp "$T/partition_table/partition-table.bin" "$SITE/release/t-embed/latest/partition-table.bin"
-
-          cp "$W/furi_esp32.bin"                      "$SITE/release/waveshare_c6_1.9/latest/furi_esp32.bin"
-          cp "$W/bootloader/bootloader.bin"           "$SITE/release/waveshare_c6_1.9/latest/bootloader.bin"
-          cp "$W/partition_table/partition-table.bin" "$SITE/release/waveshare_c6_1.9/latest/partition-table.bin"
 
           echo "=== site ==="
           find "$SITE" -type f | sort
