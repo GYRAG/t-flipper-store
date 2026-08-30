@@ -625,6 +625,22 @@
       "author": "leedave · ported by GYRAG",
       "description": "Trigger restaurant coaster pagers (Retekess and others). Turn the dial to enter pager/station numbers.",
       "url": "https://github.com/leedave/flipper-zero-meal-pager"
+    },
+    {
+      "id": "subghz_raw_edit",
+      "dir": "subghz_raw_editor",
+      "category": "Sub-GHz",
+      "author": "Lechnio",
+      "description": "Open a recorded RAW .sub capture, isolate the real signal, and edit/merge it.",
+      "url": "https://github.com/Lechnio/SubGHz-RAW-Edit"
+    },
+    {
+      "id": "subghz_scheduler",
+      "dir": "subghz-scheduler",
+      "category": "Sub-GHz",
+      "author": "Patrick Edwards · ported by GYRAG",
+      "description": "Transmit a saved Sub-GHz signal repeatedly at a set interval.",
+      "url": "https://github.com/shalebridge/flipper-subghz-scheduler"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
