@@ -124,10 +124,25 @@ static void int_input_backspace_cb(IntInputModel* model) {
  *
  * @param      model  The model
  */
+/* T-Embed: the dial is one axis. Up/Down alone stepped between the 2 rows at a
+ * fixed column, reaching only "0" and "5". Walk every key across both rows in
+ * reading order (wrapping), robust to whichever axis a view orientation delivers.
+ * Both rows are variable-length so sum row sizes rather than assume a rectangle. */
+static void int_input_step_linear(IntInputModel* model, int dir) {
+    int total = 0;
+    for(uint8_t r = 0; r < keyboard_row_count; r++) total += int_input_get_row_size(r);
+    int idx = 0;
+    for(uint8_t r = 0; r < model->selected_row; r++) idx += int_input_get_row_size(r);
+    idx += model->selected_column;
+    idx = (idx + dir + total) % total;
+    uint8_t r = 0;
+    while(idx >= (int)int_input_get_row_size(r)) { idx -= int_input_get_row_size(r); r++; }
+    model->selected_row = r;
+    model->selected_column = (uint8_t)idx;
+}
+
 static void int_input_handle_up(IntInputModel* model) {
-    if(model->selected_row > 0) {
-        model->selected_row--;
-    }
+    int_input_step_linear(model, -1);
 }
 
 /** Handle down button
@@ -135,9 +150,7 @@ static void int_input_handle_up(IntInputModel* model) {
  * @param      model  The model
  */
 static void int_input_handle_down(IntInputModel* model) {
-    if(model->selected_row < keyboard_row_count - 1) {
-        model->selected_row += 1;
-    }
+    int_input_step_linear(model, +1);
 }
 
 /** Handle left button
@@ -145,11 +158,7 @@ static void int_input_handle_down(IntInputModel* model) {
  * @param      model  The model
  */
 static void int_input_handle_left(IntInputModel* model) {
-    if(model->selected_column > 0) {
-        model->selected_column--;
-    } else {
-        model->selected_column = int_input_get_row_size(model->selected_row) - 1;
-    }
+    int_input_step_linear(model, -1);
 }
 
 /** Handle right button
@@ -157,11 +166,7 @@ static void int_input_handle_left(IntInputModel* model) {
  * @param      model  The model
  */
 static void int_input_handle_right(IntInputModel* model) {
-    if(model->selected_column < int_input_get_row_size(model->selected_row) - 1) {
-        model->selected_column++;
-    } else {
-        model->selected_column = 0;
-    }
+    int_input_step_linear(model, +1);
 }
 
 /** Handle OK button
