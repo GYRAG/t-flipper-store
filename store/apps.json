@@ -593,6 +593,38 @@
       "author": "ported by GYRAG",
       "description": "Fire a saved IR command after a countdown — e.g. mute the TV when an ad break ends. Turn the dial to enter the time.",
       "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/pause_timer"
+    },
+    {
+      "id": "radio_scanner",
+      "dir": "radio_scanner",
+      "category": "Sub-GHz",
+      "author": "@RocketGod-git",
+      "description": "Sweep the Sub-GHz band and lock onto active frequencies.",
+      "url": "https://github.com/RocketGod-Git/Flipper-Zero-Radio-Scanner"
+    },
+    {
+      "id": "tpms",
+      "dir": "tpms_receiver",
+      "category": "Sub-GHz",
+      "author": "@wosk",
+      "description": "Read tire-pressure (TPMS) sensors: ID, pressure and temperature.",
+      "url": "https://github.com/wosk/flipperzero-tpms"
+    },
+    {
+      "id": "pocsag_pager",
+      "dir": "pocsag_pager",
+      "category": "Sub-GHz",
+      "author": "@xMasterX & @Shmuma",
+      "description": "Capture and decode POCSAG pager messages on CC1101 frequencies.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/apps_source_code/pocsag_pager"
+    },
+    {
+      "id": "meal_pager",
+      "dir": "meal_pager",
+      "category": "Sub-GHz",
+      "author": "leedave · ported by GYRAG",
+      "description": "Trigger restaurant coaster pagers (Retekess and others). Turn the dial to enter pager/station numbers.",
+      "url": "https://github.com/leedave/flipper-zero-meal-pager"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
