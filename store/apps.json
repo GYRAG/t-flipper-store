@@ -585,6 +585,14 @@
       "author": "khmm12",
       "description": "Reset a Xiaomi water-filter NFC tag.",
       "url": "https://github.com/khmm12/flipper-xiaomi-filter-reset"
+    },
+    {
+      "id": "pause_timer",
+      "dir": "pause_timer",
+      "category": "Infrared",
+      "author": "ported by GYRAG",
+      "description": "Fire a saved IR command after a countdown — e.g. mute the TV when an ad break ends. Turn the dial to enter the time.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/pause_timer"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
