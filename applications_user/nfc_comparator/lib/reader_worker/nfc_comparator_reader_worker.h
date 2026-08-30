@@ -24,7 +24,7 @@ typedef enum {
 typedef struct {
    Nfc* nfc;
    FuriThread* thread;
-   NfcProtocol* protocol;
+   NfcProtocol detected_protocol; /* value copy: scanner frees its array */
    NfcComparatorReaderWorkerState state;
    NfcDevice* loaded_nfc_card;
    NfcDevice* scanned_nfc_card;

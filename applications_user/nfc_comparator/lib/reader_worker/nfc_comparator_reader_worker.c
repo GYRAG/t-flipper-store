@@ -5,7 +5,7 @@ static void nfc_comparator_reader_worker_scanner_callback(NfcScannerEvent event,
    NfcComparatorReaderWorker* nfc_comparator_reader_worker = context;
    switch(event.type) {
    case NfcScannerEventTypeDetected:
-      nfc_comparator_reader_worker->protocol = event.data.protocols;
+      nfc_comparator_reader_worker->detected_protocol = event.data.protocols[0];
       nfc_comparator_reader_worker->state = NfcComparatorReaderWorkerState_Polling;
       break;
    default:
@@ -38,7 +38,7 @@ static int32_t nfc_comparator_reader_worker_task(void* context) {
          break;
       }
       case NfcComparatorReaderWorkerState_Polling: {
-         NfcPoller* nfc_poller = nfc_poller_alloc(worker->nfc, worker->protocol[0]);
+         NfcPoller* nfc_poller = nfc_poller_alloc(worker->nfc, worker->detected_protocol);
          nfc_poller_start(nfc_poller, nfc_comparator_reader_worker_poller_callback, worker);
          while(worker->state == NfcComparatorReaderWorkerState_Polling) {
             furi_delay_ms(100);
@@ -47,7 +47,7 @@ static int32_t nfc_comparator_reader_worker_task(void* context) {
          worker->scanned_nfc_card = nfc_device_alloc();
          nfc_device_set_data(
             worker->scanned_nfc_card,
-            worker->protocol[0],
+            worker->detected_protocol,
             (NfcDeviceData*)nfc_poller_get_data(nfc_poller));
          nfc_poller_free(nfc_poller);
          break;
@@ -97,7 +97,7 @@ NfcComparatorReaderWorker*
    worker->state = NfcComparatorReaderWorkerState_Stopped;
    worker->loaded_nfc_card = NULL;
    worker->scanned_nfc_card = NULL;
-   worker->protocol = NULL;
+   worker->detected_protocol = NfcProtocolInvalid;
    return worker;
 }
 
