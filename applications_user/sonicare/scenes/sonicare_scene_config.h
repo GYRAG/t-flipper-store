@@ -1,0 +1,7 @@
+ADD_SCENE(sonicare, start, Start)
+ADD_SCENE(sonicare, about, About)
+ADD_SCENE(sonicare, read, Read)
+ADD_SCENE(sonicare, read_complete, ReadComplete)
+ADD_SCENE(sonicare, reset_confirm, ResetConfirm)
+ADD_SCENE(sonicare, reset, Reset)
+ADD_SCENE(sonicare, reset_complete, ResetComplete)
