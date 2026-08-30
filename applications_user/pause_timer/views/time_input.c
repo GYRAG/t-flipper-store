@@ -215,17 +215,6 @@ static PTInputOption time_input_get_selected_key(TimeInputModel* model) {
     return key.value;
 }
 
-static void time_input_get_select_key(TimeInputModel* model, Point delta) {
-    do {
-        const int delta_sum = model->y + delta.y;
-        model->y = delta_sum < 0 ? ROW_COUNT - 1 : delta_sum % ROW_COUNT;
-    } while(delta.y != 0 && time_input_keyset[model->y][model->x].value == -1);
-
-    do {
-        const int delta_sum = model->x + delta.x;
-        model->x = delta_sum < 0 ? COLUMN_COUNT - 1 : delta_sum % COLUMN_COUNT;
-    } while(delta.x != 0 && time_input_keyset[model->y][model->x].width == 0);
-}
 
 /* T-Embed: a dial turn emits Up/Down, which here stepped a whole row, so only
  * column 0 of the numpad was reachable. Walk every key in reading order instead,
@@ -270,36 +259,15 @@ static void time_input_process(PTTimeInput* time_input, InputEvent* event) {
                     model->ok_pressed = false;
                 }
             } else if(event->type == InputTypePress || event->type == InputTypeRepeat) {
-                if(event->key == InputKeyUp) {
+                /* T-Embed vertical view: the viewport rotates a dial turn
+                 * (Up/Down) into Left/Right before it reaches here, so the plain
+                 * dial drives Left/Right. Walk the whole numpad linearly on
+                 * every direction key - the dial reaches every key regardless of
+                 * which axis the rotation delivers. */
+                if(event->key == InputKeyUp || event->key == InputKeyLeft) {
                     time_input_step_linear(model, -1);
-                } else if(event->key == InputKeyDown) {
+                } else if(event->key == InputKeyDown || event->key == InputKeyRight) {
                     time_input_step_linear(model, 1);
-                } else if(event->key == InputKeyLeft) {
-                    if(model->last_x == 2 && model->last_y == 2 && model->y == 1 &&
-                       model->x == 3) {
-                        model->x = model->last_x;
-                        model->y = model->last_y;
-                    } else if(
-                        model->last_x == 2 && model->last_y == 4 && model->y == 3 &&
-                        model->x == 3) {
-                        model->x = model->last_x;
-                        model->y = model->last_y;
-                    } else
-                        time_input_get_select_key(model, (Point){.x = -1, .y = 0});
-                    model->last_x = 0;
-                    model->last_y = 0;
-                } else if(event->key == InputKeyRight) {
-                    if(model->x == 2 && model->y == 2) {
-                        model->last_x = model->x;
-                        model->last_y = model->y;
-                        time_input_get_select_key(model, (Point){.x = 1, .y = -1});
-                    } else if(model->x == 2 && model->y == 4) {
-                        model->last_x = model->x;
-                        model->last_y = model->y;
-                        time_input_get_select_key(model, (Point){.x = 1, .y = -1});
-                    } else {
-                        time_input_get_select_key(model, (Point){.x = 1, .y = 0});
-                    }
                 }
             }
         },
