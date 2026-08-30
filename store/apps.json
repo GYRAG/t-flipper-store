@@ -513,6 +513,78 @@
       "author": "@pbek",
       "description": "Auto-send mouse left-clicks to a PC over USB.",
       "url": "https://github.com/pbek/usb_hid_autofire"
+    },
+    {
+      "id": "mfc_editor",
+      "dir": "mfc_editor",
+      "category": "NFC",
+      "author": "TollyH",
+      "description": "Edit saved MIFARE Classic dumps on the device — view and change any block.",
+      "url": "https://github.com/TollyH/flipper-apps/tree/main/mfc-editor"
+    },
+    {
+      "id": "nfc_maker",
+      "dir": "nfc_maker",
+      "category": "NFC",
+      "author": "@WillyJL",
+      "description": "Write NDEF tags: URL, WiFi, contact, email, phone or text.",
+      "url": "https://github.com/Next-Flip/Momentum-Apps/tree/dev/nfc_maker"
+    },
+    {
+      "id": "nfc_comparator",
+      "dir": "nfc_comparator",
+      "category": "NFC",
+      "author": "acegoal07",
+      "description": "Compare a scanned card against a saved dump — UID, protocol and data.",
+      "url": "https://github.com/acegoal07/FlipperZero_NFC_Comparator"
+    },
+    {
+      "id": "mfp_reader",
+      "dir": "nfc_mfp_reader",
+      "category": "NFC",
+      "author": "Defensor7",
+      "description": "Read MIFARE Plus cards and report their security level.",
+      "url": "https://github.com/Defensor7/flipperzero-mfp-reader"
+    },
+    {
+      "id": "nfc_playlist",
+      "dir": "nfc_playlist",
+      "category": "NFC",
+      "author": "@acegoal07",
+      "description": "Emulate a list of saved NFC tags in sequence.",
+      "url": "https://github.com/acegoal07/FlipperZero_NFC_Playlist/tree/main"
+    },
+    {
+      "id": "iso15693_nfc_writer",
+      "dir": "iso15693_nfc_writer",
+      "category": "NFC",
+      "author": "@xMasterX",
+      "description": "Write ISO 15693-3 (13.56MHz vicinity) tags.",
+      "url": "https://github.com/xMasterX/all-the-plugins/tree/main/non_catalog_apps/iso15693_nfc_writer"
+    },
+    {
+      "id": "weebo",
+      "dir": "weebo",
+      "category": "NFC",
+      "author": "bettse",
+      "description": "Read and emulate amiibo (NTAG215) figures.",
+      "url": "https://github.com/bettse/weebo"
+    },
+    {
+      "id": "uk_mbirth_sonicare",
+      "dir": "sonicare",
+      "category": "NFC",
+      "author": "mbirth.uk",
+      "description": "Reset a Philips Sonicare brush-head NFC chip to refresh its usage counter.",
+      "url": "https://git.mbirth.uk/flipper_zero/sonicare"
+    },
+    {
+      "id": "xiaomi_filter_reset",
+      "dir": "xiaomi_filter_reset",
+      "category": "NFC",
+      "author": "khmm12",
+      "description": "Reset a Xiaomi water-filter NFC tag.",
+      "url": "https://github.com/khmm12/flipper-xiaomi-filter-reset"
     }
   ],
   "_url_field": "url: where the ORIGINAL app comes from, so its author gets credit. Omit it for apps with no upstream (e.g. ones written here)."
