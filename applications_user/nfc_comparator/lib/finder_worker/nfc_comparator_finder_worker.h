@@ -41,7 +41,7 @@ typedef struct {
 typedef struct {
    Nfc* nfc; /**< Pointer to the NFC context */
    FuriThread* thread; /**< Worker thread */
-   NfcProtocol* protocol; /**< Protocol in use */
+   NfcProtocol detected_protocol; /**< Protocol in use (value copy; scanner frees its array) */
    NfcComparatorFinderWorkerState state; /**< Current worker state */
    NfcDevice* loaded_nfc_card; /**< NFC card loaded from storage */
    NfcDevice* scanned_nfc_card; /**< NFC card scanned from reader */
