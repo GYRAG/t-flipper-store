@@ -130,6 +130,7 @@ extern int __gtdf2(double, double);
 extern int __ledf2(double, double);
 extern double __subdf3(double, double);
 extern int __unorddf2(double, double);
+extern float __floatdisf(long long);
 /* <math.h> doesn't declare these here (newlib config) — declare explicitly. */
 extern double pow(double, double);
 extern double floor(double);
@@ -143,6 +144,7 @@ extern double floor(double);
 #include "subghz_keystore.h"
 #include "base.h"
 #include "blocks/generic.h"
+#include "blocks/custom_btn.h"
 #include "protocol_items.h"
 #include "subghz_protocol_registry.h"
 #include "blocks/math.h"
@@ -481,6 +483,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x0ff20411, .address = (uint32_t)modff }, /* modff */
     { .hash = 0x10070181, .address = (uint32_t)file_stream_open }, /* file_stream_open */
     { .hash = 0x100c05a5, .address = (uint32_t)file_stream_close }, /* file_stream_close */
+    { .hash = 0x100dcd55, .address = (uint32_t)subghz_protocol_raw_gen_fff_data }, /* subghz_protocol_raw_gen_fff_data */
     { .hash = 0x1022b32e, .address = (uint32_t)version_get_dirty_flag }, /* version_get_dirty_flag */
     { .hash = 0x1039c338, .address = (uint32_t)bt_profile_start }, /* bt_profile_start */
     { .hash = 0x103cc7fe, .address = (uint32_t)qsort }, /* qsort */
@@ -547,6 +550,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x1a040fe3, .address = (uint32_t)nfc_device_get_data }, /* nfc_device_get_data */
     { .hash = 0x1a098aca, .address = (uint32_t)nfc_device_get_name }, /* nfc_device_get_name */
     { .hash = 0x1a12d6a6, .address = (uint32_t)variable_item_set_current_value_text }, /* variable_item_set_current_value_text */
+    { .hash = 0x1adbbd68, .address = (uint32_t)subghz_environment_set_alutech_at_4n_rainbow_table_file_name }, /* subghz_environment_set_alutech_at_4n_rainbow_table_file_name */
     { .hash = 0x1af7372b, .address = (uint32_t)flipper_application_free }, /* flipper_application_free */
     { .hash = 0x1b4bc594, .address = (uint32_t)vfprintf }, /* vfprintf */
     { .hash = 0x1b855d58, .address = (uint32_t)setjmp }, /* setjmp */
@@ -585,6 +589,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x21ce0da1, .address = (uint32_t)&message_display_backlight_off }, /* message_display_backlight_off */
     { .hash = 0x226cd7ee, .address = (uint32_t)&message_do_not_reset }, /* message_do_not_reset */
     { .hash = 0x2278387c, .address = (uint32_t)buffered_file_stream_alloc }, /* buffered_file_stream_alloc */
+    { .hash = 0x228fb062, .address = (uint32_t)subghz_environment_set_came_atomo_rainbow_table_file_name }, /* subghz_environment_set_came_atomo_rainbow_table_file_name */
     { .hash = 0x2291d3c8, .address = (uint32_t)subghz_protocol_blocks_add_to_128_bit }, /* subghz_protocol_blocks_add_to_128_bit */
     { .hash = 0x229c76c7, .address = (uint32_t)buffered_file_stream_close }, /* buffered_file_stream_close */
     { .hash = 0x229d01d5, .address = (uint32_t)cli_sleep }, /* cli_sleep */
@@ -622,6 +627,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x27dcd663, .address = (uint32_t)buffered_file_stream_open }, /* buffered_file_stream_open */
     { .hash = 0x27df2f4e, .address = (uint32_t)buffered_file_stream_sync }, /* buffered_file_stream_sync */
     { .hash = 0x282023ff, .address = (uint32_t)&message_red_255 }, /* message_red_255 */
+    { .hash = 0x28210cc5, .address = (uint32_t)furi_message_queue_reset }, /* furi_message_queue_reset */
     { .hash = 0x2849ceda, .address = (uint32_t)locale_format_date }, /* locale_format_date */
     { .hash = 0x28501fb7, .address = (uint32_t)infrared_worker_rx_stop }, /* infrared_worker_rx_stop */
     { .hash = 0x2852b60b, .address = (uint32_t)locale_format_time }, /* locale_format_time */
@@ -717,6 +723,8 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x3b73a123, .address = (uint32_t)&g_wifi_default_wpa_crypto_funcs }, /* g_wifi_default_wpa_crypto_funcs */
     { .hash = 0x3c044b63, .address = (uint32_t)canvas_reset }, /* canvas_reset */
     { .hash = 0x3c3a86eb, .address = (uint32_t)widget_reset }, /* widget_reset */
+    { .hash = 0x3c4fd2d6, .address = (uint32_t)subghz_protocol_raw_file_encoder_worker_set_callback_end }, /* subghz_protocol_raw_file_encoder_worker_set_callback_end */
+    { .hash = 0x3c5cebac, .address = (uint32_t)furi_hal_subghz_stop_async_rx }, /* furi_hal_subghz_stop_async_rx */
     { .hash = 0x3c60b980, .address = (uint32_t)canvas_width }, /* canvas_width */
     { .hash = 0x3ca1daa3, .address = (uint32_t)submenu_add_item_centered }, /* submenu_add_item_centered */
     { .hash = 0x3cc7fa55, .address = (uint32_t)&WIFI_EVENT }, /* WIFI_EVENT */
@@ -741,9 +749,11 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x3ef73dca, .address = (uint32_t)pipe_set_broken_callback }, /* pipe_set_broken_callback */
     { .hash = 0x3f1c02c8, .address = (uint32_t)esp_wifi_start }, /* esp_wifi_start */
     { .hash = 0x3f21a008, .address = (uint32_t)lock_screen_set_style }, /* lock_screen_set_style */
+    { .hash = 0x3fae2750, .address = (uint32_t)subghz_environment_set_nice_flor_s_rainbow_table_file_name }, /* subghz_environment_set_nice_flor_s_rainbow_table_file_name */
     { .hash = 0x4064a1d6, .address = (uint32_t)&I_ButtonLeft_4x7 }, /* I_ButtonLeft_4x7 */
     { .hash = 0x407bcb9f, .address = (uint32_t)infrared_get_protocol_command_length }, /* infrared_get_protocol_command_length */
     { .hash = 0x40bf2cdb, .address = (uint32_t)stream_insert_string }, /* stream_insert_string */
+    { .hash = 0x413cfe94, .address = (uint32_t)furi_hal_subghz_start_async_rx }, /* furi_hal_subghz_start_async_rx */
     { .hash = 0x415599b6, .address = (uint32_t)number_input_get_view }, /* number_input_get_view */
     { .hash = 0x417e2099, .address = (uint32_t)mf_classic_is_block_read }, /* mf_classic_is_block_read */
     { .hash = 0x41b23ff7, .address = (uint32_t)furi_thread_enumerate }, /* furi_thread_enumerate */
@@ -784,6 +794,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x48f2d81c, .address = (uint32_t)furi_timer_free }, /* furi_timer_free */
     { .hash = 0x48fa02e0, .address = (uint32_t)furi_timer_stop }, /* furi_timer_stop */
     { .hash = 0x49483490, .address = (uint32_t)__floatdidf }, /* __floatdidf */
+    { .hash = 0x4948367f, .address = (uint32_t)__floatdisf }, /* __floatdisf */
     { .hash = 0x49506e3f, .address = (uint32_t)__floatsidf }, /* __floatsidf */
     { .hash = 0x498359b0, .address = (uint32_t)aligned_malloc }, /* aligned_malloc */
     { .hash = 0x49bcf04e, .address = (uint32_t)furi_thread_list_free }, /* furi_thread_list_free */
@@ -840,6 +851,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x52d6ca49, .address = (uint32_t)button_panel_get_view }, /* button_panel_get_view */
     { .hash = 0x52f1560e, .address = (uint32_t)furi_hal_random_get }, /* furi_hal_random_get */
     { .hash = 0x52f3adea, .address = (uint32_t)locale_get_time_format }, /* locale_get_time_format */
+    { .hash = 0x52fe7a1c, .address = (uint32_t)furi_hal_rfid_tim_read_stop }, /* furi_hal_rfid_tim_read_stop */
     { .hash = 0x535df0f0, .address = (uint32_t)&furi_hal_spi_bus_handle_external }, /* furi_hal_spi_bus_handle_external */
     { .hash = 0x538016d8, .address = (uint32_t)&message_delay_10 }, /* message_delay_10 */
     { .hash = 0x538016fe, .address = (uint32_t)&message_delay_25 }, /* message_delay_25 */
@@ -862,6 +874,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x56f81406, .address = (uint32_t)button_panel_add_item }, /* button_panel_add_item */
     { .hash = 0x573571bf, .address = (uint32_t)file_browser_set_callback }, /* file_browser_set_callback */
     { .hash = 0x57749c72, .address = (uint32_t)dialog_ex_free }, /* dialog_ex_free */
+    { .hash = 0x57d1dd5c, .address = (uint32_t)furi_hal_power_check_otg_fault }, /* furi_hal_power_check_otg_fault */
     { .hash = 0x57ed8984, .address = (uint32_t)&I_KeySave_24x11 }, /* I_KeySave_24x11 */
     { .hash = 0x580f5621, .address = (uint32_t)view_dispatcher_send_to_back }, /* view_dispatcher_send_to_back */
     { .hash = 0x5838cdf7, .address = (uint32_t)submenu_set_header }, /* submenu_set_header */
@@ -1027,6 +1040,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x73cc2a0a, .address = (uint32_t)furi_hal_spi_bus_handle_deinit }, /* furi_hal_spi_bus_handle_deinit */
     { .hash = 0x73dcb981, .address = (uint32_t)__getreent }, /* __getreent */
     { .hash = 0x73f68400, .address = (uint32_t)mjs_is_string }, /* mjs_is_string */
+    { .hash = 0x740f6487, .address = (uint32_t)&sequence_blink_red_10 }, /* sequence_blink_red_10 */
     { .hash = 0x7434bbb5, .address = (uint32_t)widget_add_button_element }, /* widget_add_button_element */
     { .hash = 0x7461930a, .address = (uint32_t)furi_message_queue_get_count }, /* furi_message_queue_get_count */
     { .hash = 0x74b4eb1a, .address = (uint32_t)furi_string_end_with_str }, /* furi_string_end_with_str */
@@ -1134,6 +1148,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x85aa1a2b, .address = (uint32_t)locale_celsius_to_fahrenheit }, /* locale_celsius_to_fahrenheit */
     { .hash = 0x85b3004e, .address = (uint32_t)subghz_setting_get_inx_preset_by_name }, /* subghz_setting_get_inx_preset_by_name */
     { .hash = 0x85f4ecef, .address = (uint32_t)esp_rom_delay_us }, /* esp_rom_delay_us */
+    { .hash = 0x860a634a, .address = (uint32_t)subghz_custom_btns_reset }, /* subghz_custom_btns_reset */
     { .hash = 0x8658fbb8, .address = (uint32_t)&I_Message_8x7 }, /* I_Message_8x7 */
     { .hash = 0x866e720e, .address = (uint32_t)stream_cache_alloc }, /* stream_cache_alloc */
     { .hash = 0x86914487, .address = (uint32_t)gui_get_framebuffer_size }, /* gui_get_framebuffer_size */
@@ -1266,6 +1281,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x997780e5, .address = (uint32_t)icon_get_height }, /* icon_get_height */
     { .hash = 0x9990a6bd, .address = (uint32_t)nfc_free }, /* nfc_free */
     { .hash = 0x9997d181, .address = (uint32_t)nfc_stop }, /* nfc_stop */
+    { .hash = 0x99e80f6a, .address = (uint32_t)subghz_receiver_search_decoder_base_by_name }, /* subghz_receiver_search_decoder_base_by_name */
     { .hash = 0x99f4abab, .address = (uint32_t)mf_desfire_get_application }, /* mf_desfire_get_application */
     { .hash = 0x9a02017a, .address = (uint32_t)bit_buffer_append_bytes }, /* bit_buffer_append_bytes */
     { .hash = 0x9a1ec555, .address = (uint32_t)furi_pubsub_alloc }, /* furi_pubsub_alloc */
@@ -1299,6 +1315,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0x9e24ce92, .address = (uint32_t)file_browser_alloc }, /* file_browser_alloc */
     { .hash = 0x9e9c1ab2, .address = (uint32_t)button_panel_reset }, /* button_panel_reset */
     { .hash = 0x9ee1c27c, .address = (uint32_t)furi_thread_alloc }, /* furi_thread_alloc */
+    { .hash = 0x9f0997b2, .address = (uint32_t)&gpio_cc1101_g0 }, /* gpio_cc1101_g0 */
     { .hash = 0x9f6ebc55, .address = (uint32_t)file_browser_start }, /* file_browser_start */
     { .hash = 0x9f74bed6, .address = (uint32_t)subghz_devices_set_frequency }, /* subghz_devices_set_frequency */
     { .hash = 0x9f8ba228, .address = (uint32_t)furi_string_cmp_str }, /* furi_string_cmp_str */
@@ -1353,6 +1370,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xa8f4232a, .address = (uint32_t)__paritysi2 }, /* __paritysi2 */
     { .hash = 0xa9603a3f, .address = (uint32_t)memmgr_heap_disable_thread_trace }, /* memmgr_heap_disable_thread_trace */
     { .hash = 0xa9c23ff0, .address = (uint32_t)furi_hal_hid_is_connected }, /* furi_hal_hid_is_connected */
+    { .hash = 0xa9e6da59, .address = (uint32_t)subghz_devices_get_name }, /* subghz_devices_get_name */
     { .hash = 0xa9e82298, .address = (uint32_t)furi_thread_alloc_ex }, /* furi_thread_alloc_ex */
     { .hash = 0xa9e8a877, .address = (uint32_t)simple_array_alloc }, /* simple_array_alloc */
     { .hash = 0xa9e95939, .address = (uint32_t)subghz_devices_get_rssi }, /* subghz_devices_get_rssi */
@@ -1374,6 +1392,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xab26b7f2, .address = (uint32_t)subghz_worker_free }, /* subghz_worker_free */
     { .hash = 0xab2de2b6, .address = (uint32_t)subghz_worker_stop }, /* subghz_worker_stop */
     { .hash = 0xab43dc6f, .address = (uint32_t)ble_profile_hid_consumer_key_release }, /* ble_profile_hid_consumer_key_release */
+    { .hash = 0xab8b1082, .address = (uint32_t)subghz_devices_set_async_mirror_pin }, /* subghz_devices_set_async_mirror_pin */
     { .hash = 0xabb42e5a, .address = (uint32_t)mbedtls_md_hmac_reset }, /* mbedtls_md_hmac_reset */
     { .hash = 0xac055b11, .address = (uint32_t)i2s_channel_enable }, /* i2s_channel_enable */
     { .hash = 0xac46f417, .address = (uint32_t)&sequence_display_backlight_on }, /* sequence_display_backlight_on */
@@ -1415,6 +1434,8 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xb23ed1fe, .address = (uint32_t)furi_semaphore_release }, /* furi_semaphore_release */
     { .hash = 0xb260e7ad, .address = (uint32_t)flipper_format_write_hex }, /* flipper_format_write_hex */
     { .hash = 0xb2721527, .address = (uint32_t)&sequence_reset_blue }, /* sequence_reset_blue */
+    { .hash = 0xb28830fc, .address = (uint32_t)furi_hal_subghz_is_frequency_valid }, /* furi_hal_subghz_is_frequency_valid */
+    { .hash = 0xb2cd82c4, .address = (uint32_t)furi_hal_rfid_tim_read_start }, /* furi_hal_rfid_tim_read_start */
     { .hash = 0xb2ded522, .address = (uint32_t)i2c_master_write_read_device }, /* i2c_master_write_read_device */
     { .hash = 0xb2ef6c96, .address = (uint32_t)furi_kernel_is_running }, /* furi_kernel_is_running */
     { .hash = 0xb2efa0f9, .address = (uint32_t)bit_lib_bytes_to_num_bcd }, /* bit_lib_bytes_to_num_bcd */
@@ -1635,6 +1656,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xd51ac80e, .address = (uint32_t)bit_buffer_set_byte_with_parity }, /* bit_buffer_set_byte_with_parity */
     { .hash = 0xd51eed4c, .address = (uint32_t)datetime_get_days_per_month }, /* datetime_get_days_per_month */
     { .hash = 0xd551b8be, .address = (uint32_t)i2s_channel_disable }, /* i2s_channel_disable */
+    { .hash = 0xd5564c53, .address = (uint32_t)subghz_setting_delete_custom_preset }, /* subghz_setting_delete_custom_preset */
     { .hash = 0xd5adbc28, .address = (uint32_t)flipper_format_file_alloc }, /* flipper_format_file_alloc */
     { .hash = 0xd5d1fa73, .address = (uint32_t)flipper_format_file_close }, /* flipper_format_file_close */
     { .hash = 0xd6342752, .address = (uint32_t)ble_profile_hid_mouse_scroll }, /* ble_profile_hid_mouse_scroll */
@@ -1667,6 +1689,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xda809a94, .address = (uint32_t)keys_dict_add_key }, /* keys_dict_add_key */
     { .hash = 0xdac62733, .address = (uint32_t)flipper_application_is_plugin }, /* flipper_application_is_plugin */
     { .hash = 0xdad2c9f2, .address = (uint32_t)nfc_scanner_start }, /* nfc_scanner_start */
+    { .hash = 0xdadae9de, .address = (uint32_t)&gpio_speaker }, /* gpio_speaker */
     { .hash = 0xdaf4df4b, .address = (uint32_t)icon_animation_get_width }, /* icon_animation_get_width */
     { .hash = 0xdb02a5b6, .address = (uint32_t)canvas_string_width }, /* canvas_string_width */
     { .hash = 0xdb149d9e, .address = (uint32_t)pipe_install_as_stdio }, /* pipe_install_as_stdio */
@@ -1749,6 +1772,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xe5b27f65, .address = (uint32_t)subghz_block_generic_serialize }, /* subghz_block_generic_serialize */
     { .hash = 0xe5b2f9b9, .address = (uint32_t)subghz_setting_get_preset_data_size }, /* subghz_setting_get_preset_data_size */
     { .hash = 0xe61d840f, .address = (uint32_t)vsnprintf }, /* vsnprintf */
+    { .hash = 0xe6534b28, .address = (uint32_t)subghz_protocol_decoder_base_deserialize }, /* subghz_protocol_decoder_base_deserialize */
     { .hash = 0xe6563372, .address = (uint32_t)mjs_exec_file }, /* mjs_exec_file */
     { .hash = 0xe66b9b45, .address = (uint32_t)furi_hal_nfc_release }, /* furi_hal_nfc_release */
     { .hash = 0xe6ae4491, .address = (uint32_t)mbedtls_aes_setkey_enc }, /* mbedtls_aes_setkey_enc */
@@ -1847,6 +1871,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xf4a81c24, .address = (uint32_t)subghz_protocol_blocks_crc16 }, /* subghz_protocol_blocks_crc16 */
     { .hash = 0xf4c9bfe6, .address = (uint32_t)flipper_format_insert_or_update_string_cstr }, /* flipper_format_insert_or_update_string_cstr */
     { .hash = 0xf4d39c2d, .address = (uint32_t)iso15693_3_get_block_size }, /* iso15693_3_get_block_size */
+    { .hash = 0xf53bb818, .address = (uint32_t)subghz_transmitter_get_protocol_instance }, /* subghz_transmitter_get_protocol_instance */
     { .hash = 0xf567b2bd, .address = (uint32_t)iso14443_3a_copy }, /* iso14443_3a_copy */
     { .hash = 0xf5696324, .address = (uint32_t)iso14443_3a_free }, /* iso14443_3a_free */
     { .hash = 0xf580f8d3, .address = (uint32_t)&I_Ok_btn_9x9 }, /* I_Ok_btn_9x9 */
@@ -1867,6 +1892,7 @@ static const struct sym_entry firmware_api_table[] = {
     { .hash = 0xf8527efe, .address = (uint32_t)furi_hal_infrared_async_tx_wait_termination }, /* furi_hal_infrared_async_tx_wait_termination */
     { .hash = 0xf880a84e, .address = (uint32_t)elements_scrollbar_horizontal }, /* elements_scrollbar_horizontal */
     { .hash = 0xf8899db0, .address = (uint32_t)flipper_format_read_string }, /* flipper_format_read_string */
+    { .hash = 0xf91ff9f4, .address = (uint32_t)furi_hal_power_get_usb_voltage }, /* furi_hal_power_get_usb_voltage */
     { .hash = 0xf927c5ad, .address = (uint32_t)variable_item_get_current_value_index }, /* variable_item_get_current_value_index */
     { .hash = 0xf95f7860, .address = (uint32_t)subghz_setting_load_custom_preset }, /* subghz_setting_load_custom_preset */
     { .hash = 0xf974e74c, .address = (uint32_t)furi_hal_subghz_load_custom_preset }, /* furi_hal_subghz_load_custom_preset */
