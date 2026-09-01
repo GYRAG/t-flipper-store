@@ -219,7 +219,14 @@ void furi_thread_scrub(void) {
    stacks are only a few KB, so this doesn't meaningfully cut into the internal
    DRAM the WiFi driver needs. Add names here sparingly. */
 static bool furi_thread_stack_prefer_internal(const char* name) {
-    return name && (strcmp(name, "LoaderApplications") == 0);
+    if(!name) return false;
+    /* "LoaderApplications" — latency (FAP icon decode); see comment above.
+       "ChamConn" — the NFC "Clone" BLE worker. The Bluedroid controller touches
+       the running task's stack from ISR/DMA context and while the cache is
+       suspended, none of which can reach PSRAM, so a PSRAM stack faults in
+       esp_psram_check_ptr_addr the moment BLE starts. BLE workers MUST run on an
+       internal-RAM stack. */
+    return strcmp(name, "LoaderApplications") == 0 || strcmp(name, "ChamConn") == 0;
 }
 
 static StackType_t* furi_thread_alloc_stack(const char* name, uint32_t stack_size) {
