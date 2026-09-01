@@ -403,22 +403,18 @@ static void text_input_view_draw_callback(Canvas* canvas, void* _model) {
     }
 }
 
+/* T-Embed: the dial is one axis. Upstream Up/Down step between the 3 keyboard
+ * rows, so a plain turn reached only 3 keys. Walk every key in reading order,
+ * wrapping column-first into the next/previous row, so the dial alone reaches
+ * every key; the top row still steps into the text cursor (cursor_select). */
 static void text_input_handle_up(TextInput* text_input, TextInputModel* model) {
     UNUSED(text_input);
-    if(model->selected_row > 0) {
+    if(model->selected_column > 0) {
+        model->selected_column--;
+    } else if(model->selected_row > 0) {
         model->selected_row--;
-        if(model->selected_row == 0 &&
-           model->selected_column >
-               get_row_size(keyboards[model->selected_keyboard], model->selected_row) - 6) {
-            model->selected_column = model->selected_column + 1;
-        }
-        if(model->selected_row == 1 &&
-           model->selected_keyboard == symbol_keyboard.keyboard_index) {
-            if(model->selected_column > 5)
-                model->selected_column += 2;
-            else if(model->selected_column > 1)
-                model->selected_column += 1;
-        }
+        model->selected_column =
+            get_row_size(keyboards[model->selected_keyboard], model->selected_row) - 1;
     } else {
         model->cursor_select = true;
         model->clear_default_text = false;
@@ -429,20 +425,13 @@ static void text_input_handle_down(TextInput* text_input, TextInputModel* model)
     UNUSED(text_input);
     if(model->cursor_select) {
         model->cursor_select = false;
+    } else if(
+        model->selected_column <
+        get_row_size(keyboards[model->selected_keyboard], model->selected_row) - 1) {
+        model->selected_column++;
     } else if(model->selected_row < keyboard_row_count - 1) {
         model->selected_row++;
-        if(model->selected_row == 1 &&
-           model->selected_column >
-               get_row_size(keyboards[model->selected_keyboard], model->selected_row) - 4) {
-            model->selected_column = model->selected_column - 1;
-        }
-        if(model->selected_row == 2 &&
-           model->selected_keyboard == symbol_keyboard.keyboard_index) {
-            if(model->selected_column > 6)
-                model->selected_column -= 2;
-            else if(model->selected_column > 1)
-                model->selected_column -= 1;
-        }
+        model->selected_column = 0;
     }
 }
 
